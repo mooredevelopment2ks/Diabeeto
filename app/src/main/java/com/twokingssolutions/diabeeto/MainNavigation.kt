@@ -8,8 +8,10 @@ import androidx.navigation.toRoute
 import com.twokingssolutions.diabeeto.model.CustomNavType
 import com.twokingssolutions.diabeeto.model.Food
 import com.twokingssolutions.diabeeto.model.NavRoutes
+import com.twokingssolutions.diabeeto.screens.AddFoodItemScreen
 import com.twokingssolutions.diabeeto.screens.MainScreen
 import com.twokingssolutions.diabeeto.screens.SearchResultScreen
+import com.twokingssolutions.diabeeto.screens.ViewFoodItemScreen
 import kotlin.reflect.typeOf
 
 @Composable
@@ -22,9 +24,10 @@ fun MainNavigation() {
     ) {
         composable<NavRoutes.MainRoute> {
             MainScreen(
+                navController,
                 onFoodItemClick = { food ->
                     navController.navigate(
-                        NavRoutes.SearchResultsRoute(
+                        NavRoutes.ViewFoodItemRoute(
                             food = food
                         )
                     )
@@ -36,7 +39,21 @@ fun MainNavigation() {
         ) { backStackEntry ->
             val arguments = backStackEntry.toRoute<NavRoutes.SearchResultsRoute>()
             SearchResultScreen(
-                food = arguments.food
+                food = arguments.food,
+                navController = navController
+            )
+        }
+        composable<NavRoutes.AddFoodItemRoute> {
+            AddFoodItemScreen(navController)
+        }
+        composable<NavRoutes.ViewFoodItemRoute>(
+            typeMap = mapOf(typeOf<Food>() to CustomNavType.FoodType)
+        ) { backStackEntry ->
+            val arguments = backStackEntry.toRoute<NavRoutes.SearchResultsRoute>()
+
+            ViewFoodItemScreen(
+                food = arguments.food,
+                navController = navController
             )
         }
     }

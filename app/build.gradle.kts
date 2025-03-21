@@ -66,4 +66,8 @@ dependencies {
     //typesafe-navigation
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
+
+    //icons
+    implementation("androidx.compose.material:material:1.7.8")
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
 }

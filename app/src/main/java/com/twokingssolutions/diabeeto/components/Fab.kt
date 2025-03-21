@@ -11,11 +11,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.twokingssolutions.diabeeto.model.NavRoutes
 
 @Composable
-fun Fab() {
+fun Fab(
+    navController: NavController
+) {
     FloatingActionButton(
-        onClick = {},
+        onClick = {
+            navController.navigate(NavRoutes.AddFoodItemRoute)
+        },
         shape = RoundedCornerShape(30.dp),
         containerColor = Color.Black,
         contentColor = Color(0xFFFFCE3B),
