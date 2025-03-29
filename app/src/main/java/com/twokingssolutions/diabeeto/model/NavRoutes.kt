@@ -11,10 +11,10 @@ sealed class NavRoutes {
     @Serializable
     data object AddFoodItemRoute : NavRoutes()
 
-    // ResultsScreen that accepts parameters for search results
+    // ListScreen with arguments
     @Serializable
     data class SearchResultsRoute(
-        val food: Food
+        val foods: List<Food>
     ) : NavRoutes()
 
     @Serializable

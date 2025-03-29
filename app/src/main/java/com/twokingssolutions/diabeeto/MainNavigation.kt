@@ -1,6 +1,7 @@
 package com.twokingssolutions.diabeeto
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -12,11 +13,13 @@ import com.twokingssolutions.diabeeto.screens.AddFoodItemScreen
 import com.twokingssolutions.diabeeto.screens.MainScreen
 import com.twokingssolutions.diabeeto.screens.SearchResultScreen
 import com.twokingssolutions.diabeeto.screens.ViewFoodItemScreen
+import com.twokingssolutions.diabeeto.viewModel.MainViewModel
 import kotlin.reflect.typeOf
 
 @Composable
 fun MainNavigation() {
     val navController = rememberNavController()
+    val mainViewModel: MainViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -24,36 +27,31 @@ fun MainNavigation() {
     ) {
         composable<NavRoutes.MainRoute> {
             MainScreen(
-                navController,
-                onFoodItemClick = { food ->
-                    navController.navigate(
-                        NavRoutes.ViewFoodItemRoute(
-                            food = food
-                        )
-                    )
-                }
-            )
-        }
-        composable<NavRoutes.SearchResultsRoute>(
-            typeMap = mapOf(typeOf<Food>() to CustomNavType.FoodType)
-        ) { backStackEntry ->
-            val arguments = backStackEntry.toRoute<NavRoutes.SearchResultsRoute>()
-            SearchResultScreen(
-                food = arguments.food,
                 navController = navController
             )
         }
+        composable<NavRoutes.SearchResultsRoute>(
+            typeMap = mapOf(typeOf<List<Food>>() to CustomNavType.FoodListType)
+        ) { backStackEntry ->
+            val arguments = backStackEntry.toRoute<NavRoutes.SearchResultsRoute>()
+            SearchResultScreen(
+                navController = navController,
+                foods = arguments.foods
+            )
+        }
         composable<NavRoutes.AddFoodItemRoute> {
-            AddFoodItemScreen(navController)
+            AddFoodItemScreen(
+                navController = navController
+            )
         }
         composable<NavRoutes.ViewFoodItemRoute>(
             typeMap = mapOf(typeOf<Food>() to CustomNavType.FoodType)
         ) { backStackEntry ->
-            val arguments = backStackEntry.toRoute<NavRoutes.SearchResultsRoute>()
-
+            val arguments = backStackEntry.toRoute<NavRoutes.ViewFoodItemRoute>()
             ViewFoodItemScreen(
+                navController = navController,
                 food = arguments.food,
-                navController = navController
+                mainViewModel = mainViewModel
             )
         }
     }
