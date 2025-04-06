@@ -1,5 +1,7 @@
 package com.twokingssolutions.diabeeto.screens
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,24 +36,29 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import androidx.compose.material.icons.outlined.Image
-import com.twokingssolutions.diabeeto.model.Food
-import com.twokingssolutions.diabeeto.viewModel.myFoodList
+import androidx.compose.ui.res.colorResource
+import androidx.navigation.NavController
+import com.twokingssolutions.diabeeto.R
 import com.twokingssolutions.diabeeto.components.UploadPhoto
+import com.twokingssolutions.diabeeto.db.Food
+import com.twokingssolutions.diabeeto.viewModel.FoodDatabaseViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun AddFoodItemScreen(navController: NavHostController) {
+fun AddFoodItemScreen(
+    navController: NavController,
+    foodDatabaseViewModel: FoodDatabaseViewModel = koinViewModel()
+) {
     var showDialog by remember { mutableStateOf(false) }
-    var foodTitle by remember { mutableStateOf("") }
+    var foodItem by remember { mutableStateOf("") }
     var carbAmount by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
-    var foodImageUri by remember { mutableStateOf<String?>(null) }
+    var foodImageUri by remember { mutableStateOf("") }
     val context = LocalContext.current
 
     Scaffold(
-        containerColor = Color(0xFFFFCE3B),
-        // padding to make sure the content is not drawn under the system bars or camera cutout. Works only Api 35 and above
+        containerColor = colorResource(R.color.primary_colour),
         contentWindowInsets = WindowInsets.safeContent
     ) { innerPadding ->
         Column(
@@ -76,14 +83,13 @@ fun AddFoodItemScreen(navController: NavHostController) {
             )
             Spacer(modifier = Modifier.height(20.dp))
             OutlinedTextField(
-                value = foodTitle,
-                onValueChange = { foodTitle = it },
+                value = foodItem,
+                onValueChange = { foodItem = it },
                 label = { Text("Food Title") },
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedContainerColor = Color(0xFFFEF7FF),
-                    focusedContainerColor = Color(0xFFFEF7FF)
+                    unfocusedContainerColor = colorResource(R.color.white_colour),
+                    focusedContainerColor = colorResource(R.color.white_colour)
                 )
             )
             Spacer(modifier = Modifier.height(30.dp))
@@ -91,11 +97,10 @@ fun AddFoodItemScreen(navController: NavHostController) {
                 value = carbAmount,
                 onValueChange = { carbAmount = it },
                 label = { Text("Carb Amount") },
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedContainerColor = Color(0xFFFEF7FF),
-                    focusedContainerColor = Color(0xFFFEF7FF)
+                    unfocusedContainerColor = colorResource(R.color.white_colour),
+                    focusedContainerColor = colorResource(R.color.white_colour)
                 )
             )
             Spacer(modifier = Modifier.height(30.dp))
@@ -103,11 +108,10 @@ fun AddFoodItemScreen(navController: NavHostController) {
                 value = notes,
                 onValueChange = { notes = it },
                 label = { Text("Notes on food...") },
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedContainerColor = Color(0xFFFEF7FF),
-                    focusedContainerColor = Color(0xFFFEF7FF)
+                    unfocusedContainerColor = colorResource(R.color.white_colour),
+                    focusedContainerColor = colorResource(R.color.white_colour)
                 ),
                 minLines = 6
             )
@@ -117,6 +121,7 @@ fun AddFoodItemScreen(navController: NavHostController) {
                 showDialog = showDialog,
                 onDismiss = { showDialog = false },
                 onPhotoUriChanged = { uri ->
+                    Log.d("AddFoodItemScreen", "Selected photo URI: $uri")
                     foodImageUri = uri.toString()
                 },
                 foodImageUri = foodImageUri
@@ -130,7 +135,7 @@ fun AddFoodItemScreen(navController: NavHostController) {
                     onClick = { showDialog = true },
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFFEF7FF),
+                        containerColor = colorResource(R.color.white_colour),
                         contentColor = Color.Black
                     )
                 ) {
@@ -150,19 +155,27 @@ fun AddFoodItemScreen(navController: NavHostController) {
                 Spacer(modifier = Modifier.height(30.dp))
                 ElevatedButton(
                     onClick = {
-                        val newId = (myFoodList.maxOfOrNull { it.id } ?: 0) + 1
-                        myFoodList.add(Food(
-                            id = newId,
-                            foodItem = foodTitle,
-                            carbAmount = carbAmount,
-                            notes = notes,
-                            imageUri = foodImageUri
-                        ))
-                        navController.popBackStack()
+                        if (foodItem.isNotEmpty() && carbAmount.isNotEmpty()) {
+                            foodDatabaseViewModel.insertFood(
+                                Food(
+                                    foodItem = foodItem,
+                                    carbAmount = carbAmount,
+                                    notes = notes,
+                                    imageUri = foodImageUri
+                                )
+                            )
+                            navController.popBackStack()
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Please fill in food item and carb amount",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     },
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFFEF7FF),
+                        containerColor = colorResource(R.color.white_colour),
                         contentColor = Color.Black
                     )
                 ) {
@@ -172,6 +185,7 @@ fun AddFoodItemScreen(navController: NavHostController) {
                     )
                 }
             }
+
         }
     }
 }

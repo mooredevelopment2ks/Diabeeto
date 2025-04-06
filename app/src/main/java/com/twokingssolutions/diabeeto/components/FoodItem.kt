@@ -1,5 +1,6 @@
 package com.twokingssolutions.diabeeto.components
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -11,26 +12,31 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.twokingssolutions.diabeeto.model.Food
+import com.twokingssolutions.diabeeto.R
+import com.twokingssolutions.diabeeto.db.Food
 import com.twokingssolutions.diabeeto.model.NavRoutes
+import java.io.File
+import androidx.core.net.toUri
 
 @Composable
 fun FoodItem(
     navController: NavController,
     food: Food
 ) {
+    val context = LocalContext.current
+    Log.d("FoodItem", "Displaying food with imageUri: ${food.imageUri}")
     Card(
         shape = RectangleShape,
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = colorResource(R.color.white_colour)
         ),
         modifier = Modifier
             .fillMaxWidth()
@@ -66,25 +72,34 @@ fun FoodItem(
                     .fillMaxWidth()
                     .padding(16.dp)
             )
-            Text(
-                text = "photo = ${food.imageUri ?: "No photo available"}",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            )
-            food.imageUri?.let { uri ->
-                Image(
-                    painter = rememberAsyncImagePainter(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(uri)
-                            .build()
-                    ),
-                    contentDescription = "Selected Photo",
-                    modifier = Modifier.size(200.dp),
-                    contentScale = ContentScale.Crop
-                )
+            food.imageUri.let { uriString ->
+                val uri = uriString.toUri()
+                val imageFile = File(uri.path ?: "")
+                Log.d("FoodItem", "Checking image file at: $uri")
+                if (imageFile.exists()) {
+                    Log.d("FoodItem", "Image file exists: ${imageFile.absolutePath}")
+                    Image(
+                        painter = rememberAsyncImagePainter(
+                            model = ImageRequest.Builder(context)
+                                .data(uri)
+                                .build()
+                        ),
+                        contentDescription = "Selected Photo",
+                        modifier = Modifier.size(200.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Log.d("FoodItem", "Image file not found: $uri")
+                    Text(
+                        text = "Image not found",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    )
+                }
             }
         }
     }
 }
+
 

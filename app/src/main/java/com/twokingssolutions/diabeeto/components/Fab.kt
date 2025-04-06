@@ -10,8 +10,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.twokingssolutions.diabeeto.R
 import com.twokingssolutions.diabeeto.model.NavRoutes
 
 @Composable
@@ -24,13 +26,13 @@ fun Fab(
         },
         shape = RoundedCornerShape(30.dp),
         containerColor = Color.Black,
-        contentColor = Color(0xFFFFCE3B),
+        contentColor = colorResource(R.color.primary_colour),
         modifier = Modifier
             .padding(horizontal = 30.dp)
     ) {
         Icon(
             imageVector = Icons.Filled.Add,
-            contentDescription = null,
+            contentDescription = "Add Food Item",
             modifier = Modifier
                 .size(50.dp)
         )

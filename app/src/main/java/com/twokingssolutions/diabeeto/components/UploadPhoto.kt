@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import com.twokingssolutions.diabeeto.internalStorage.saveImageToInternalStorage
 
 @Composable
 fun UploadPhoto(
@@ -41,7 +42,8 @@ fun UploadPhoto(
     ) { success ->
         if (success) {
             photoUri?.let {
-                onPhotoUriChanged(it)
+                val savedUri = saveImageToInternalStorage(context, it)
+                savedUri?.let { uri -> onPhotoUriChanged(uri) }
             }
         }
     }
@@ -50,7 +52,8 @@ fun UploadPhoto(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            onPhotoUriChanged(it)
+            val savedUri = saveImageToInternalStorage(context, it)
+            savedUri?.let { uri -> onPhotoUriChanged(uri) }
         }
     }
 

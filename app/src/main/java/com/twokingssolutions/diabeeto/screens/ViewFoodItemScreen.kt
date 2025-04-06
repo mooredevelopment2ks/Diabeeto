@@ -31,40 +31,39 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.twokingssolutions.diabeeto.model.Food
-import com.twokingssolutions.diabeeto.viewModel.myFoodList
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.twokingssolutions.diabeeto.R
 import com.twokingssolutions.diabeeto.components.UploadPhoto
-import com.twokingssolutions.diabeeto.viewModel.MainViewModel
+import com.twokingssolutions.diabeeto.db.Food
+import com.twokingssolutions.diabeeto.viewModel.FoodDatabaseViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ViewFoodItemScreen(
     navController: NavController,
-    food: Food,
-    mainViewModel: MainViewModel = viewModel()
+    food: Food
 ) {
-    var showDialog by remember { mutableStateOf(false) }
-    var foodItem by remember { mutableStateOf(food.foodItem) }
+    val foodDatabaseViewModel: FoodDatabaseViewModel = koinViewModel()
     var carbAmount by remember { mutableStateOf(food.carbAmount) }
+    var foodItem by remember { mutableStateOf(food.foodItem) }
     var notes by remember { mutableStateOf(food.notes) }
     var foodImageUri by remember { mutableStateOf(food.imageUri) }
+    var showDialog by remember { mutableStateOf(false) }
     var editableView by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
     val context = LocalContext.current
 
     Scaffold(
-        // padding to make sure the content is not drawn under the system bars or camera cutout. Works only Api 35 and above
         contentWindowInsets = WindowInsets.safeContent,
-        containerColor = Color(0xFFFFCE3B)
-    ) { innerPadding->
+        containerColor = colorResource(R.color.primary_colour),
+    ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .padding(innerPadding)
+            modifier = Modifier.padding(innerPadding)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -85,8 +84,7 @@ fun ViewFoodItemScreen(
                 value = carbAmount,
                 onValueChange = { carbAmount = it },
                 readOnly = !editableView,
-                modifier = Modifier
-                    .focusRequester(focusRequester),
+                modifier = Modifier.focusRequester(focusRequester),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = if (!editableView) Color.Transparent else Color.White,
                     unfocusedContainerColor = if (!editableView) Color.Transparent else Color.White,
@@ -103,8 +101,7 @@ fun ViewFoodItemScreen(
                 value = foodItem,
                 onValueChange = { foodItem = it },
                 readOnly = !editableView,
-                modifier = Modifier
-                    .focusRequester(focusRequester),
+                modifier = Modifier.focusRequester(focusRequester),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = if (!editableView) Color.Transparent else Color.White,
                     unfocusedContainerColor = if (!editableView) Color.Transparent else Color.White,
@@ -118,11 +115,10 @@ fun ViewFoodItemScreen(
             )
             Spacer(modifier = Modifier.height(20.dp))
             TextField(
-                value = notes ?: "notes = null",
+                value = notes,
                 onValueChange = { notes = it },
                 readOnly = !editableView,
-                modifier = Modifier
-                    .focusRequester(focusRequester),
+                modifier = Modifier.focusRequester(focusRequester),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = if (!editableView) Color.Transparent else Color.White,
                     unfocusedContainerColor = if (!editableView) Color.Transparent else Color.White,
@@ -161,19 +157,15 @@ fun ViewFoodItemScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                OutlinedButton (
+                OutlinedButton(
                     onClick = {
-                        val index = myFoodList.indexOfFirst { it.id == food.id }
-                        if (index != -1) {
-                            myFoodList.removeAt(index)
-                            mainViewModel.deleteFood(food)
-                        }
+                        foodDatabaseViewModel.deleteFood(food)
                         navController.popBackStack()
                     },
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFFDB8B00),
+                        contentColor = colorResource(R.color.secondary_colour),
                     ),
-                    border = BorderStroke(1.dp, Color(0xFFDB8B00)),
+                    border = BorderStroke(1.dp, colorResource(R.color.secondary_colour)),
                     modifier = Modifier.padding(10.dp)
                 ) {
                     Text("Delete")
@@ -182,21 +174,20 @@ fun ViewFoodItemScreen(
                     onClick = {
                         editableView = !editableView
                         if (!editableView) {
-                            val index = myFoodList.indexOfFirst { it.id == food.id }
-                            if (index != -1) {
-                                myFoodList[index] = food.copy(
+                            foodDatabaseViewModel.updateFood(
+                                Food(
+                                    id = food.id,
                                     foodItem = foodItem,
                                     carbAmount = carbAmount,
                                     notes = notes,
                                     imageUri = foodImageUri
                                 )
-                                mainViewModel.updateFood(myFoodList[index])
-                            }
+                            )
                         }
                     },
                     colors = ButtonDefaults.filledTonalButtonColors(
-                        contentColor = Color(0xFFFFCE3B),
-                        containerColor = Color(0xFFDB8B00)
+                        contentColor = colorResource(R.color.primary_colour),
+                        containerColor = colorResource(R.color.secondary_colour)
                     ),
                     modifier = Modifier.padding(10.dp)
                 ) {

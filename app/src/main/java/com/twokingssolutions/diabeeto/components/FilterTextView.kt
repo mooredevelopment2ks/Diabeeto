@@ -31,22 +31,21 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.twokingssolutions.diabeeto.model.NavRoutes
-import com.twokingssolutions.diabeeto.viewModel.MainViewModel
+import com.twokingssolutions.diabeeto.viewModel.FoodDatabaseViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterTextView(
-    navController: NavController
+    navController: NavController,
+    foodDatabaseViewModel: FoodDatabaseViewModel
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val viewModel = viewModel<MainViewModel>()
-    val searchText by viewModel.searchText.collectAsState()
-    val foods by viewModel.foods.collectAsState()
-    val isSearching by viewModel.isSearching.collectAsState()
     val focusRequester = remember { FocusRequester() }
+    val searchText by foodDatabaseViewModel.searchText.collectAsState(initial = "")
+    val searchResults by foodDatabaseViewModel.foodList.collectAsState(initial = emptyList())
+    val isSearching by foodDatabaseViewModel.isSearching.collectAsState(initial = false)
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -55,7 +54,8 @@ fun FilterTextView(
         OutlinedTextField(
             value = searchText,
             onValueChange = {
-                viewModel.onSearchTextChange(it)
+                foodDatabaseViewModel.onSearchTextChange(it)
+                expanded = true
             },
             label = { Text("Search") },
             modifier = Modifier
@@ -68,12 +68,17 @@ fun FilterTextView(
                 unfocusedTextColor = Color.Black,
                 focusedTextColor = Color.Black
             ),
+            singleLine = true,
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Search
             ),
             keyboardActions = KeyboardActions(
+                onDone = {
+                    navController.navigate(NavRoutes.SearchResultsRoute(searchResults))
+                    expanded = false
+                },
                 onSearch = {
-                    navController.navigate(NavRoutes.SearchResultsRoute(foods))
+                    navController.navigate(NavRoutes.SearchResultsRoute(searchResults))
                     expanded = false
                 }
             ),
@@ -85,7 +90,7 @@ fun FilterTextView(
                         modifier = Modifier
                             .size(24.dp)
                             .clickable {
-                                viewModel.onSearchTextChange("")
+                                foodDatabaseViewModel.onSearchTextChange("")
                                 expanded = false
                             }
                     )
@@ -98,16 +103,16 @@ fun FilterTextView(
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
-        } else if (foods.isNotEmpty() && expanded) {
+        } else if (searchResults.isNotEmpty() && expanded) {
             ExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
-                foods.forEach { food ->
+                searchResults.forEach { food ->
                     DropdownMenuItem(
                         text = { Text(food.foodItem) },
                         onClick = {
-                            navController.navigate(NavRoutes.SearchResultsRoute(foods))
+                            navController.navigate(NavRoutes.SearchResultsRoute(searchResults))
                             expanded = false
                         }
                     )

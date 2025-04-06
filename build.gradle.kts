@@ -5,5 +5,8 @@ plugins {
     alias(libs.plugins.kotlin.compose) apply false
 
     //typesafe-navigation
-    alias(libs.plugins.jetbrains.kotlin.serialization) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
+
+    //ksp
+    alias(libs.plugins.ksp) apply false
 }

@@ -1,17 +1,16 @@
 package com.twokingssolutions.diabeeto.model
 
+import com.twokingssolutions.diabeeto.db.Food
 import kotlinx.serialization.Serializable
 
 @Serializable
 sealed class NavRoutes {
-    // ListScreen with no arguments
     @Serializable
     data object MainRoute : NavRoutes()
 
     @Serializable
     data object AddFoodItemRoute : NavRoutes()
 
-    // ListScreen with arguments
     @Serializable
     data class SearchResultsRoute(
         val foods: List<Food>

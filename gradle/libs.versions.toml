@@ -1,12 +1,13 @@
 [versions]
 agp = "8.9.1"
-coilCompose = "2.0.0"
-kotlin = "2.0.21"
+coilCompose = "2.7.0"
+kotlin = "2.1.20"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
+lifecycleViewModelCompose = "2.8.7"
 activityCompose = "1.10.1"
 composeBom = "2025.03.01"
 materialIconsExtended = "1.7.8"
@@ -14,11 +15,17 @@ materialIconsExtended = "1.7.8"
 kotlinxSerializationJson = "1.8.0"
 kotlinxSerialization = "2.0.20"
 navigationCompose = "2.8.9"
+#room-database
+roomVersion = "2.6.1"
+roomKtx = "2.6.1"
+roomRuntimeAndroid = "2.7.0-rc03"
+#koin
+koin = "4.0.3"
+ksp = "2.1.20-1.0.32"
 
 [libraries]
-androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version = "2.8.7" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewModelCompose" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-androidx-material = { module = "androidx.compose.material:material", version.ref = "materialIconsExtended" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -37,11 +44,23 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 #typesafe-navigation
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+#room-database
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
+room-database = { module = "androidx.room:room-runtime", version.ref = "roomVersion" }
+room-database-compiler = { module = "androidx.room:room-compiler", version.ref = "roomVersion" }
+androidx-room-runtime-android = { group = "androidx.room", name = "room-runtime-android", version.ref = "roomRuntimeAndroid" }
+#koin
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
+koin-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 #typesafe-navigation
-jetbrains-kotlin-serialization = { id ="org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinxSerialization"}
+kotlin-serialization = { id ="org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinxSerialization"}
+#room-database
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 

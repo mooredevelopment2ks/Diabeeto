@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.navigation.NavType
 import kotlinx.serialization.json.Json
 import android.net.Uri
+import com.twokingssolutions.diabeeto.db.Food
 
 object CustomNavType {
 

@@ -21,23 +21,24 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.twokingssolutions.diabeeto.R
 import com.twokingssolutions.diabeeto.components.FoodItem
-import com.twokingssolutions.diabeeto.model.Food
+import com.twokingssolutions.diabeeto.db.Food
 
 @Composable
 fun SearchResultScreen(
     navController: NavController,
-    foods: List<Food>
+    filteredFoods: List<Food>
 ) {
     Scaffold(
         // padding to make sure the content is not drawn under the system bars or camera cutout. Works only Api 35 and above
         contentWindowInsets = WindowInsets.safeContent,
-        containerColor = Color(0xFFFFCE3B)
+        containerColor = colorResource(R.color.primary_colour)
     ) { innerPadding ->
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -61,12 +62,12 @@ fun SearchResultScreen(
             )
             Spacer(modifier = Modifier.height(20.dp))
             LazyColumn {
-                if (foods.isEmpty()) {
+                if (filteredFoods.isEmpty()) {
                     item {
                         Text(text = "Could not find any food items. Please try again.")
                     }
                 } else {
-                    items(foods) { food ->
+                    items(filteredFoods) { food ->
                         FoodItem(navController, food)
                     }
                 }
