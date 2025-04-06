@@ -1,7 +1,6 @@
 package com.twokingssolutions.diabeeto
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -19,7 +18,6 @@ class MainActivity : ComponentActivity() {
             androidContext(this@MainActivity)
             modules(databaseModule)
         }
-        Log.d("MainActivity", "onCreate called")
         enableEdgeToEdge()
         cleanUpOldImages(this)
         setContent {

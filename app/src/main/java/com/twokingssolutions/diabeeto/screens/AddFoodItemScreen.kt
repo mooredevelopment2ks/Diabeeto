@@ -1,6 +1,5 @@
 package com.twokingssolutions.diabeeto.screens
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -121,7 +120,6 @@ fun AddFoodItemScreen(
                 showDialog = showDialog,
                 onDismiss = { showDialog = false },
                 onPhotoUriChanged = { uri ->
-                    Log.d("AddFoodItemScreen", "Selected photo URI: $uri")
                     foodImageUri = uri.toString()
                 },
                 foodImageUri = foodImageUri

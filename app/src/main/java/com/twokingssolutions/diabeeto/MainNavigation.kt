@@ -17,9 +17,7 @@ import org.koin.androidx.compose.koinViewModel
 import kotlin.reflect.typeOf
 
 @Composable
-fun MainNavigation(
-
-) {
+fun MainNavigation() {
     val navController = rememberNavController()
     val foodDatabaseViewModel: FoodDatabaseViewModel = koinViewModel()
 

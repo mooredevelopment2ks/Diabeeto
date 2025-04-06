@@ -1,6 +1,5 @@
 package com.twokingssolutions.diabeeto.components
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -32,7 +31,6 @@ fun FoodItem(
     food: Food
 ) {
     val context = LocalContext.current
-    Log.d("FoodItem", "Displaying food with imageUri: ${food.imageUri}")
     Card(
         shape = RectangleShape,
         colors = CardDefaults.cardColors(
@@ -75,9 +73,7 @@ fun FoodItem(
             food.imageUri.let { uriString ->
                 val uri = uriString.toUri()
                 val imageFile = File(uri.path ?: "")
-                Log.d("FoodItem", "Checking image file at: $uri")
                 if (imageFile.exists()) {
-                    Log.d("FoodItem", "Image file exists: ${imageFile.absolutePath}")
                     Image(
                         painter = rememberAsyncImagePainter(
                             model = ImageRequest.Builder(context)
@@ -89,7 +85,6 @@ fun FoodItem(
                         contentScale = ContentScale.Crop
                     )
                 } else {
-                    Log.d("FoodItem", "Image file not found: $uri")
                     Text(
                         text = "Image not found",
                         modifier = Modifier
