@@ -10,4 +10,5 @@ class FoodRepository(private val foodDao: FoodDao) {
     suspend fun deleteFood(food: Food) = foodDao.deleteFood(food)
     fun getAllFoodsOrderByFoodItem(): Flow<List<Food>> = foodDao.getAllFoodsOrderByFoodItem()
     fun searchFoods(query: String): Flow<List<Food>> = foodDao.searchFoods(query)
+    fun getAllFavourites(): Flow<List<Food>> = foodDao.getAllFavourites()
 }

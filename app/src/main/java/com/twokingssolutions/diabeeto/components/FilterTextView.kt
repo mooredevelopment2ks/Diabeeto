@@ -29,9 +29,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.twokingssolutions.diabeeto.R
 import com.twokingssolutions.diabeeto.model.NavRoutes
 import com.twokingssolutions.diabeeto.viewModel.FoodDatabaseViewModel
 
@@ -65,8 +67,8 @@ fun FilterTextView(
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedContainerColor = Color.White,
                 focusedContainerColor = Color.White,
-                unfocusedTextColor = Color.Black,
-                focusedTextColor = Color.Black
+                unfocusedTextColor = colorResource(R.color.secondary_colour),
+                focusedTextColor = colorResource(R.color.secondary_colour)
             ),
             singleLine = true,
             keyboardOptions = KeyboardOptions.Default.copy(

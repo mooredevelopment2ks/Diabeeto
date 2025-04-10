@@ -29,4 +29,9 @@ interface FoodDao {
      */
     @Query("SELECT * FROM $FOOD_TABLE WHERE food_item LIKE '%' || :query || '%' ORDER BY food_item ASC")
     fun searchFoods(query: String): Flow<List<Food>>
+
+    @Query("SELECT * FROM $FOOD_TABLE WHERE is_favourite = 1 ORDER BY food_item ASC")
+    fun getAllFavourites(): Flow<List<Food>>
+
+
 }

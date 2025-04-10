@@ -27,6 +27,10 @@ class FoodDatabaseViewModel(private val foodRepository: FoodRepository) : ViewMo
     val isSearching: Flow<Boolean>
         get() = _isSearching
 
+    private val _favouriteFoodList = MutableStateFlow<List<Food>>(emptyList())
+    val favouriteFoodList: Flow<List<Food>>
+        get() = _favouriteFoodList
+
     init {
         viewModelScope.launch {
             _searchText
@@ -46,6 +50,12 @@ class FoodDatabaseViewModel(private val foodRepository: FoodRepository) : ViewMo
         viewModelScope.launch {
             foodRepository.getAllFoodsOrderByFoodItem().collect { foods ->
                 _foodList.value = foods
+            }
+        }
+
+        viewModelScope.launch {
+            foodRepository.getAllFavourites().collect { foods ->
+                _favouriteFoodList.value = foods
             }
         }
     }

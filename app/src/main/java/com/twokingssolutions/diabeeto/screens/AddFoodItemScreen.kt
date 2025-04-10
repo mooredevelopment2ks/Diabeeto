@@ -30,12 +30,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.outlined.Image
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.res.colorResource
 import androidx.navigation.NavController
 import com.twokingssolutions.diabeeto.R
@@ -51,7 +51,7 @@ fun AddFoodItemScreen(
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var foodItem by remember { mutableStateOf("") }
-    var carbAmount by remember { mutableStateOf("") }
+    var carbAmount by remember { mutableIntStateOf(0) }
     var notes by remember { mutableStateOf("") }
     var foodImageUri by remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -93,8 +93,8 @@ fun AddFoodItemScreen(
             )
             Spacer(modifier = Modifier.height(30.dp))
             OutlinedTextField(
-                value = carbAmount,
-                onValueChange = { carbAmount = it },
+                value = carbAmount.toString(),
+                onValueChange = { carbAmount = it.toIntOrNull() ?: 0 },
                 label = { Text("Carb Amount") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -134,7 +134,7 @@ fun AddFoodItemScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colorResource(R.color.white_colour),
-                        contentColor = Color.Black
+                        contentColor = colorResource(R.color.secondary_colour)
                     )
                 ) {
                     Row(
@@ -153,7 +153,7 @@ fun AddFoodItemScreen(
                 Spacer(modifier = Modifier.height(30.dp))
                 ElevatedButton(
                     onClick = {
-                        if (foodItem.isNotEmpty() && carbAmount.isNotEmpty()) {
+                        if (foodItem.isNotEmpty() && carbAmount > 0) {
                             foodDatabaseViewModel.insertFood(
                                 Food(
                                     foodItem = foodItem,
@@ -174,7 +174,7 @@ fun AddFoodItemScreen(
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = colorResource(R.color.white_colour),
-                        contentColor = Color.Black
+                        contentColor = colorResource(R.color.tertiary_colour)
                     )
                 ) {
                     Text(

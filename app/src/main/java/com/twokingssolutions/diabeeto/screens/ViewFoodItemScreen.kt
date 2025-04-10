@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ButtonDefaults
@@ -33,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -75,14 +77,16 @@ fun ViewFoodItemScreen(
             }
             Spacer(modifier = Modifier.height(20.dp))
             Text(
-                "Carb Amount $carbAmount",
+                "Carb Amount ${carbAmount}g",
                 fontSize = 40.sp,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(20.dp))
             TextField(
-                value = carbAmount,
-                onValueChange = { carbAmount = it },
+                value = "${carbAmount}g",
+                onValueChange = { newValue ->
+                    carbAmount = newValue.toIntOrNull() ?: 0 // Convert String to Int or default to 0
+                },
                 readOnly = !editableView,
                 modifier = Modifier.focusRequester(focusRequester),
                 colors = TextFieldDefaults.colors(
@@ -94,6 +98,9 @@ fun ViewFoodItemScreen(
                 textStyle = TextStyle(
                     fontSize = 20.sp,
                     textAlign = TextAlign.Start
+                ),
+                keyboardOptions = KeyboardOptions.Default.copy( // Corrected parameter name
+                    keyboardType = KeyboardType.Number
                 )
             )
             Spacer(modifier = Modifier.height(20.dp))
@@ -163,9 +170,9 @@ fun ViewFoodItemScreen(
                         navController.popBackStack()
                     },
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = colorResource(R.color.secondary_colour),
+                        contentColor = colorResource(R.color.tertiary_colour),
                     ),
-                    border = BorderStroke(1.dp, colorResource(R.color.secondary_colour)),
+                    border = BorderStroke(1.dp, colorResource(R.color.tertiary_colour)),
                     modifier = Modifier.padding(10.dp)
                 ) {
                     Text("Delete")
@@ -187,7 +194,7 @@ fun ViewFoodItemScreen(
                     },
                     colors = ButtonDefaults.filledTonalButtonColors(
                         contentColor = colorResource(R.color.primary_colour),
-                        containerColor = colorResource(R.color.secondary_colour)
+                        containerColor = colorResource(R.color.tertiary_colour)
                     ),
                     modifier = Modifier.padding(10.dp)
                 ) {

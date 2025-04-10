@@ -9,7 +9,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -25,7 +24,7 @@ fun Fab(
             navController.navigate(NavRoutes.AddFoodItemRoute)
         },
         shape = RoundedCornerShape(30.dp),
-        containerColor = Color.Black,
+        containerColor = colorResource(R.color.secondary_colour),
         contentColor = colorResource(R.color.primary_colour),
         modifier = Modifier
             .padding(horizontal = 30.dp)

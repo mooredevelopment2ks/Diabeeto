@@ -12,11 +12,13 @@ data class Food(
     @ColumnInfo(name = "food_item")
     val foodItem: String = "",
     @ColumnInfo(name = "carb_amount")
-    val carbAmount: String = "",
+    val carbAmount: Int = 0,
     @ColumnInfo(name = "notes")
     val notes: String,
     @ColumnInfo(name = "image_uri")
     val imageUri: String,
+    @ColumnInfo(name = "is_favourite")
+    val isFavourite: Boolean = false,
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0
 )

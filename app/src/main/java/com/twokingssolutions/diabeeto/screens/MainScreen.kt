@@ -27,7 +27,7 @@ fun MainScreen(
     navController: NavController,
     foodDatabaseViewModel: FoodDatabaseViewModel = koinViewModel()
 ) {
-    val foods by foodDatabaseViewModel.foodList.collectAsState(initial = emptyList())
+    val favouriteFoods by foodDatabaseViewModel.favouriteFoodList.collectAsState(initial = emptyList())
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -46,19 +46,19 @@ fun MainScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp),
+                    .height(100.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.img),
+                    painter = painterResource(id = R.drawable.diabeeto_app_name),
                     contentDescription = "placeholder",
                     tint = Color.Unspecified,
-                    modifier = Modifier.scale(1.5f),
+                    modifier = Modifier.scale(3f),
                 )
             }
             FilterTextView(navController, foodDatabaseViewModel)
             LazyColumn {
-                items(foods) { food ->
+                items(favouriteFoods) { food ->
                     FoodItem(navController, food)
                 }
             }
