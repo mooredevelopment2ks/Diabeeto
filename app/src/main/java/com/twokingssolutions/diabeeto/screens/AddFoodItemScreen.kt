@@ -1,13 +1,16 @@
 package com.twokingssolutions.diabeeto.screens
 
+import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.rememberScrollState
@@ -34,12 +37,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.material.icons.outlined.Image
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
 import androidx.navigation.NavController
 import com.twokingssolutions.diabeeto.R
-import com.twokingssolutions.diabeeto.components.UploadPhoto
 import com.twokingssolutions.diabeeto.db.Food
 import com.twokingssolutions.diabeeto.viewModel.FoodDatabaseViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -49,16 +51,25 @@ fun AddFoodItemScreen(
     navController: NavController,
     foodDatabaseViewModel: FoodDatabaseViewModel = koinViewModel()
 ) {
-    var showDialog by remember { mutableStateOf(false) }
     var foodItem by remember { mutableStateOf("") }
     var carbAmount by remember { mutableIntStateOf(0) }
     var notes by remember { mutableStateOf("") }
-    var foodImageUri by remember { mutableStateOf("") }
     val context = LocalContext.current
+
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val safeContentInsets = WindowInsets.safeContent
+    val orientationAwareInsets = remember(isLandscape) {
+        if (isLandscape) {
+            safeContentInsets.only(WindowInsetsSides.Horizontal)
+        } else {
+            safeContentInsets.only(WindowInsetsSides.Vertical)
+        }
+    }
 
     Scaffold(
         containerColor = colorResource(R.color.primary_colour),
-        contentWindowInsets = WindowInsets.safeContent
+        contentWindowInsets = orientationAwareInsets
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -115,42 +126,10 @@ fun AddFoodItemScreen(
                 minLines = 6
             )
             Spacer(modifier = Modifier.height(30.dp))
-            UploadPhoto(
-                context = context,
-                showDialog = showDialog,
-                onDismiss = { showDialog = false },
-                onPhotoUriChanged = { uri ->
-                    foodImageUri = uri.toString()
-                },
-                foodImageUri = foodImageUri
-            )
-            Spacer(modifier = Modifier.height(30.dp))
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.End
             ) {
-                ElevatedButton(
-                    onClick = { showDialog = true },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorResource(R.color.white_colour),
-                        contentColor = colorResource(R.color.secondary_colour)
-                    )
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Image,
-                            contentDescription = "Add Image"
-                        )
-                        Text(
-                            text = "Add Image",
-                            modifier = Modifier.padding(vertical = 10.dp)
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(30.dp))
                 ElevatedButton(
                     onClick = {
                         if (foodItem.isNotEmpty() && carbAmount > 0) {
@@ -158,8 +137,7 @@ fun AddFoodItemScreen(
                                 Food(
                                     foodItem = foodItem,
                                     carbAmount = carbAmount,
-                                    notes = notes,
-                                    imageUri = foodImageUri
+                                    notes = notes
                                 )
                             )
                             navController.popBackStack()

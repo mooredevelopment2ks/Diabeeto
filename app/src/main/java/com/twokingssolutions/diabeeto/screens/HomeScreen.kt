@@ -1,5 +1,6 @@
 package com.twokingssolutions.diabeeto.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,27 +17,49 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.twokingssolutions.diabeeto.R
+import com.twokingssolutions.diabeeto.components.BottomNavBar
 import com.twokingssolutions.diabeeto.components.Fab
 import com.twokingssolutions.diabeeto.components.FilterTextView
 import com.twokingssolutions.diabeeto.components.FoodItem
 import com.twokingssolutions.diabeeto.viewModel.FoodDatabaseViewModel
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalConfiguration
 
 @Composable
-fun MainScreen(
+fun HomeScreen(
     navController: NavController,
     foodDatabaseViewModel: FoodDatabaseViewModel = koinViewModel()
 ) {
     val favouriteFoods by foodDatabaseViewModel.favouriteFoodList.collectAsState(initial = emptyList())
 
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val safeContentInsets = WindowInsets.safeContent
+    val orientationAwareInsets = remember(isLandscape) {
+        if (isLandscape) {
+            safeContentInsets.only(WindowInsetsSides.Horizontal)
+        } else {
+            safeContentInsets.only(WindowInsetsSides.Vertical)
+        }
+    }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        contentWindowInsets = WindowInsets.safeContent,
+        contentWindowInsets = orientationAwareInsets,
         containerColor = colorResource(R.color.primary_colour),
         floatingActionButton = {
             Fab(navController = navController)
         },
-        floatingActionButtonPosition = FabPosition.End
+        floatingActionButtonPosition = FabPosition.End,
+        bottomBar = {
+            BottomNavBar(
+                navController = navController,
+                modifier = Modifier,
+                containerColor = colorResource(R.color.secondary_colour),
+                contentColor = colorResource(R.color.white_colour),
+                tonalElevation = 10.dp
+            )
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier

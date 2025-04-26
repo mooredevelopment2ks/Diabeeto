@@ -13,8 +13,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.twokingssolutions.diabeeto.di.databaseModule
+import com.twokingssolutions.diabeeto.di.insulinCalculatorModule
+import com.twokingssolutions.diabeeto.di.preferencesModule
 import com.twokingssolutions.diabeeto.ui.theme.DiabeetoTheme
-import com.twokingssolutions.diabeeto.internalStorage.cleanUpOldImages
 
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -70,10 +71,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         startKoin {
             androidContext(this@MainActivity)
-            modules(databaseModule)
+            modules(listOf(
+                databaseModule,
+                preferencesModule,
+                insulinCalculatorModule
+            ))
         }
         enableEdgeToEdge()
-        cleanUpOldImages(this)
         isSplashScreenVisible = false
         setContent {
             DiabeetoTheme {

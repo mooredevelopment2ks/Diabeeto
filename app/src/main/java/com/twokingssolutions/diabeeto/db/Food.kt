@@ -15,8 +15,6 @@ data class Food(
     val carbAmount: Int = 0,
     @ColumnInfo(name = "notes")
     val notes: String,
-    @ColumnInfo(name = "image_uri")
-    val imageUri: String,
     @ColumnInfo(name = "is_favourite")
     val isFavourite: Boolean = false,
     @PrimaryKey(autoGenerate = true)

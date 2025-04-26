@@ -5,8 +5,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed class NavRoutes {
+    //Carb Counter Routes
     @Serializable
-    data object MainRoute : NavRoutes()
+    data object CarbCounterRoute : NavRoutes()
+
+    @Serializable
+    data object HomeRoute : NavRoutes()
 
     @Serializable
     data object AddFoodItemRoute : NavRoutes()
@@ -20,4 +24,18 @@ sealed class NavRoutes {
     data class ViewFoodItemRoute(
         val food: Food
     ) : NavRoutes()
+
+    // Insulin Calculator Routes
+    @Serializable
+    data object InsulinCalculatorRoute : NavRoutes()
+
+    @Serializable
+    data object InsulinCalculatorScreenRoute : NavRoutes()
+
+    // Settings Routes
+    @Serializable
+    data object SettingsRoute : NavRoutes()
+
+    @Serializable
+    data object SettingsScreenRoute : NavRoutes()
 }

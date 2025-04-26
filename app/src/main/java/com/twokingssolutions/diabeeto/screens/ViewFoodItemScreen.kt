@@ -1,13 +1,16 @@
 package com.twokingssolutions.diabeeto.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.text.KeyboardOptions
@@ -24,6 +27,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -31,7 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -40,7 +44,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.twokingssolutions.diabeeto.R
-import com.twokingssolutions.diabeeto.components.UploadPhoto
 import com.twokingssolutions.diabeeto.db.Food
 import com.twokingssolutions.diabeeto.viewModel.FoodDatabaseViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -51,17 +54,26 @@ fun ViewFoodItemScreen(
     food: Food
 ) {
     val foodDatabaseViewModel: FoodDatabaseViewModel = koinViewModel()
-    var carbAmount by remember { mutableStateOf(food.carbAmount) }
+    var carbAmount by remember { mutableIntStateOf(food.carbAmount) }
     var foodItem by remember { mutableStateOf(food.foodItem) }
     var notes by remember { mutableStateOf(food.notes) }
-    var foodImageUri by remember { mutableStateOf(food.imageUri) }
     var showDialog by remember { mutableStateOf(false) }
     var editableView by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
-    val context = LocalContext.current
+
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val safeContentInsets = WindowInsets.safeContent
+    val orientationAwareInsets = remember(isLandscape) {
+        if (isLandscape) {
+            safeContentInsets.only(WindowInsetsSides.Horizontal)
+        } else {
+            safeContentInsets.only(WindowInsetsSides.Vertical)
+        }
+    }
 
     Scaffold(
-        contentWindowInsets = WindowInsets.safeContent,
+        contentWindowInsets = orientationAwareInsets,
         containerColor = colorResource(R.color.primary_colour),
     ) { innerPadding ->
         Column(
@@ -83,9 +95,9 @@ fun ViewFoodItemScreen(
             )
             Spacer(modifier = Modifier.height(20.dp))
             TextField(
-                value = "${carbAmount}g",
+                value = if (editableView) carbAmount.toString() else "${carbAmount}g",
                 onValueChange = { newValue ->
-                    carbAmount = newValue.toIntOrNull() ?: 0 // Convert String to Int or default to 0
+                    carbAmount = newValue.toIntOrNull() ?: carbAmount
                 },
                 readOnly = !editableView,
                 modifier = Modifier.focusRequester(focusRequester),
@@ -101,7 +113,16 @@ fun ViewFoodItemScreen(
                 ),
                 keyboardOptions = KeyboardOptions.Default.copy( // Corrected parameter name
                     keyboardType = KeyboardType.Number
-                )
+                ),
+                trailingIcon = {
+                    if (editableView) {
+                        Text(
+                            text = "g",
+                            fontSize = 20.sp,
+                            modifier = Modifier.padding(end = 12.dp)
+                        )
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(20.dp))
             TextField(
@@ -138,15 +159,6 @@ fun ViewFoodItemScreen(
                 )
             )
             Spacer(modifier = Modifier.height(20.dp))
-            UploadPhoto(
-                context = context,
-                showDialog = showDialog,
-                onDismiss = { showDialog = false },
-                onPhotoUriChanged = { uri ->
-                    foodImageUri = uri.toString()
-                },
-                foodImageUri = foodImageUri
-            )
             if (editableView) {
                 OutlinedButton(
                     onClick = { showDialog = true },
@@ -186,8 +198,7 @@ fun ViewFoodItemScreen(
                                     id = food.id,
                                     foodItem = foodItem,
                                     carbAmount = carbAmount,
-                                    notes = notes,
-                                    imageUri = foodImageUri
+                                    notes = notes
                                 )
                             )
                         }
