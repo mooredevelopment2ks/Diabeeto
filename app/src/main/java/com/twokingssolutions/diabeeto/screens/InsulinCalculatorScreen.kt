@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -133,18 +135,20 @@ fun InsulinCalculatorScreen(
                     )
                 }
             }
-            vmSelectedFoods.forEach { food ->
-                FoodItem(
-                    navController = navController,
-                    food = food,
-                    quantity = foodQuantities[food.id] ?: 1,
-                    onQuantityChanged = { newQuantity ->
-                        insulinCalculatorViewModel.updateFoodQuantity(food.id, newQuantity)
-                    },
-                    onRemove = {
-                        insulinCalculatorViewModel.removeFood(food)
-                    }
-                )
+            LazyColumn {
+                items(vmSelectedFoods) { food ->
+                    FoodItem(
+                        navController = navController,
+                        food = food,
+                        quantity = foodQuantities[food.id] ?: 1,
+                        onQuantityChanged = { newQuantity ->
+                            insulinCalculatorViewModel.updateFoodQuantity(food.id, newQuantity)
+                        },
+                        onRemove = {
+                            insulinCalculatorViewModel.removeFood(food)
+                        }
+                    )
+                }
             }
         }
     }

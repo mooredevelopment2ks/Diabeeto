@@ -25,11 +25,13 @@ import com.twokingssolutions.diabeeto.viewModel.FoodDatabaseViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
+import com.twokingssolutions.diabeeto.viewModel.InsulinCalculatorViewModel
 
 @Composable
 fun HomeScreen(
     navController: NavController,
-    foodDatabaseViewModel: FoodDatabaseViewModel = koinViewModel()
+    foodDatabaseViewModel: FoodDatabaseViewModel = koinViewModel(),
+    insulinCalculatorViewModel: InsulinCalculatorViewModel = koinViewModel()
 ) {
     val favouriteFoods by foodDatabaseViewModel.favouriteFoodList.collectAsState(initial = emptyList())
 
@@ -82,7 +84,13 @@ fun HomeScreen(
             FilterTextView(navController, foodDatabaseViewModel)
             LazyColumn {
                 items(favouriteFoods) { food ->
-                    FoodItem(navController, food)
+                    FoodItem(
+                        navController = navController,
+                        food = food,
+                        addFoodItemToInsulinCalcScreen = {
+                            insulinCalculatorViewModel.addFood(food)
+                        }
+                    )
                 }
             }
         }

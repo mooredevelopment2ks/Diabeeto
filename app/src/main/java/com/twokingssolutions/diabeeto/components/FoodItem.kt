@@ -231,7 +231,7 @@ fun FoodItem(
                             }
                         }
                     }
-                    if (selectedRoute == 2) {
+                    if (selectedRoute == 2 || selectedRoute == 0) {
                         Box(
                             modifier = Modifier
                                 .weight(0.25f)
