@@ -83,7 +83,9 @@ fun ViewFoodItemScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Start
             ) {
-                IconButton(onClick = { navController.popBackStack() }) {
+                IconButton(onClick = {
+                    navController.navigateUp()
+                }) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                 }
             }
