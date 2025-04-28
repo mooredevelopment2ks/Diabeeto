@@ -7,7 +7,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -43,7 +42,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.twokingssolutions.diabeeto.R
 import com.twokingssolutions.diabeeto.db.Food
@@ -85,6 +86,7 @@ fun FoodItem(
             }
         }
     )
+
     AnimatedVisibility(
         visible = !isRemoved,
         exit = shrinkVertically(
@@ -131,107 +133,94 @@ fun FoodItem(
                         .fillMaxWidth()
                         .height(IntrinsicSize.Min)
                 ) {
-                    Column(
-                        Modifier
-                            .weight(if (selectedRoute == 2) 0.75f else 1f)
-                            .clickable {
-                                navController.navigate(NavRoutes.ViewFoodItemRoute(food))
-                            }
-                            .padding(20.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            if (!isFavourite && !food.isFavourite) {
-                                Icon(
-                                    painter = painterResource(R.drawable.star_outlined_24dp_black),
-                                    contentDescription = "Add to Favourites",
-                                    modifier = Modifier.clickable {
-                                        isFavourite = !isFavourite
-                                        foodDatabaseViewModel.updateFood(
-                                            Food(
-                                                id = food.id,
-                                                foodItem = food.foodItem,
-                                                carbAmount = food.carbAmount,
-                                                notes = food.notes,
-                                                isFavourite = true
-                                            )
+                    if (!isFavourite && !food.isFavourite) {
+                        Icon(
+                            painter = painterResource(R.drawable.star_outlined_24dp_black),
+                            contentDescription = "Add to Favourites",
+                            modifier = Modifier
+                                .padding(10.dp)
+                                .align(Alignment.Top)
+                                .clickable {
+                                    isFavourite = !isFavourite
+                                    foodDatabaseViewModel.updateFood(
+                                        Food(
+                                            id = food.id,
+                                            foodItem = food.foodItem,
+                                            carbAmount = food.carbAmount,
+                                            notes = food.notes,
+                                            isFavourite = true
                                         )
-                                    },
-                                    tint = colorResource(R.color.inactive_colour)
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Filled.Star,
-                                    contentDescription = "Remove from Favourites",
-                                    modifier = Modifier.clickable {
-                                        isFavourite = !isFavourite
-                                        foodDatabaseViewModel.updateFood(
-                                            Food(
-                                                id = food.id,
-                                                foodItem = food.foodItem,
-                                                carbAmount = food.carbAmount,
-                                                notes = food.notes,
-                                                isFavourite = false
-                                            )
+                                    )
+                                },
+                            tint = colorResource(R.color.inactive_colour)
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Filled.Star,
+                            contentDescription = "Remove from Favourites",
+                            modifier = Modifier
+                                .padding(10.dp)
+                                .align(Alignment.Top)
+                                .clickable {
+                                    isFavourite = !isFavourite
+                                    foodDatabaseViewModel.updateFood(
+                                        Food(
+                                            id = food.id,
+                                            foodItem = food.foodItem,
+                                            carbAmount = food.carbAmount,
+                                            notes = food.notes,
+                                            isFavourite = false
                                         )
-                                    },
-                                    tint = colorResource(R.color.tertiary_colour)
-                                )
-                            }
-                        }
-                        Text(
-                            text = "Id = ${food.id}",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
+                                    )
+                                },
+                            tint = colorResource(R.color.tertiary_colour)
                         )
-                        Text(
-                            text = "food item = ${food.foodItem}",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        )
-                        Text(
-                            text = "carbs amount = ${food.carbAmount}",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        )
-                        Text(
-                            text = "notes = ${food.notes}",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        )
-                        if (selectedRoute == 1) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.AddCircleOutline,
-                                    contentDescription = "Add Food Quantity",
-                                    modifier = Modifier.clickable {
-                                        onQuantityChanged(quantity + 1)
-                                    }
-                                )
-                                Text(
-                                    text = "x$quantity",
-                                    modifier = Modifier.padding(16.dp)
-                                )
-                                Icon(
-                                    imageVector = Icons.Outlined.RemoveCircleOutline,
-                                    contentDescription = "Minus Food Quantity",
-                                    modifier = Modifier.clickable {
-                                        if (quantity >= 2) onQuantityChanged(quantity - 1)
-                                    }
-                                )
-                            }
-                        }
                     }
-                    if (selectedRoute == 2 || selectedRoute == 0) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { navController.navigate(NavRoutes.ViewFoodItemRoute(food)) }
+                            .padding(10.dp)
+                    ) {
+                        Text(
+                            text = food.foodItem,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+                        Text(
+                            text = "${food.carbAmount}g",
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+                    }
+                    if (selectedRoute == 1) {
+                        Row(
+                            modifier = Modifier
+                                .weight(0.40f)
+                                .fillMaxHeight(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.RemoveCircleOutline,
+                                contentDescription = "Minus Food Quantity",
+                                modifier = Modifier.clickable {
+                                    if (quantity >= 2) onQuantityChanged(quantity - 1)
+                                }
+                            )
+                            Text(
+                                text = "x$quantity",
+                                modifier = Modifier.padding(horizontal = 8.dp)
+                            )
+                            Icon(
+                                imageVector = Icons.Outlined.AddCircleOutline,
+                                contentDescription = "Add Food Quantity",
+                                modifier = Modifier.clickable {
+                                    onQuantityChanged(quantity + 1)
+                                }
+                            )
+                        }
+                    } else {
                         Box(
                             modifier = Modifier
                                 .weight(0.25f)

@@ -57,7 +57,6 @@ fun ViewFoodItemScreen(
     var carbAmount by remember { mutableIntStateOf(food.carbAmount) }
     var foodItem by remember { mutableStateOf(food.foodItem) }
     var notes by remember { mutableStateOf(food.notes) }
-    var showDialog by remember { mutableStateOf(false) }
     var editableView by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
 
@@ -160,19 +159,6 @@ fun ViewFoodItemScreen(
                     textAlign = TextAlign.Start
                 )
             )
-            Spacer(modifier = Modifier.height(20.dp))
-            if (editableView) {
-                OutlinedButton(
-                    onClick = { showDialog = true },
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color(0xFFDB8B00),
-                    ),
-                    border = BorderStroke(1.dp, Color(0xFFDB8B00)),
-                    modifier = Modifier.padding(10.dp)
-                ) {
-                    Text("Change Image")
-                }
-            }
             Spacer(modifier = Modifier.height(20.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
