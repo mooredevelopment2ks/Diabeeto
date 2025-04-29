@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -37,9 +38,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.navigation.NavController
 import com.twokingssolutions.diabeeto.R
 import com.twokingssolutions.diabeeto.db.Food
@@ -52,7 +53,7 @@ fun AddFoodItemScreen(
     foodDatabaseViewModel: FoodDatabaseViewModel = koinViewModel()
 ) {
     var foodItem by remember { mutableStateOf("") }
-    var carbAmount by remember { mutableIntStateOf(0) }
+    var carbAmount by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
     val context = LocalContext.current
 
@@ -98,19 +99,30 @@ fun AddFoodItemScreen(
                 label = { Text("Food Title") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = colorResource(R.color.secondary_colour),
+                    unfocusedTextColor = colorResource(R.color.secondary_colour),
+                    focusedLabelColor = colorResource(R.color.secondary_colour),
+                    unfocusedLabelColor = colorResource(R.color.secondary_colour),
                     unfocusedContainerColor = colorResource(R.color.white_colour),
                     focusedContainerColor = colorResource(R.color.white_colour)
                 )
             )
             Spacer(modifier = Modifier.height(30.dp))
             OutlinedTextField(
-                value = carbAmount.toString(),
-                onValueChange = { carbAmount = it.toIntOrNull() ?: 0 },
+                value = carbAmount,
+                onValueChange = { carbAmount = it.filter { char -> char.isDigit() } },
                 label = { Text("Carb Amount") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = colorResource(R.color.secondary_colour),
+                    unfocusedTextColor = colorResource(R.color.secondary_colour),
+                    focusedLabelColor = colorResource(R.color.secondary_colour),
+                    unfocusedLabelColor = colorResource(R.color.secondary_colour),
                     unfocusedContainerColor = colorResource(R.color.white_colour),
                     focusedContainerColor = colorResource(R.color.white_colour)
+                ),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number
                 )
             )
             Spacer(modifier = Modifier.height(30.dp))
@@ -120,6 +132,10 @@ fun AddFoodItemScreen(
                 label = { Text("Notes on food...") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = colorResource(R.color.secondary_colour),
+                    unfocusedTextColor = colorResource(R.color.secondary_colour),
+                    focusedLabelColor = colorResource(R.color.secondary_colour),
+                    unfocusedLabelColor = colorResource(R.color.secondary_colour),
                     unfocusedContainerColor = colorResource(R.color.white_colour),
                     focusedContainerColor = colorResource(R.color.white_colour)
                 ),
@@ -132,11 +148,11 @@ fun AddFoodItemScreen(
             ) {
                 ElevatedButton(
                     onClick = {
-                        if (foodItem.isNotEmpty() && carbAmount > 0) {
+                        if (foodItem.isNotEmpty() && carbAmount.isNotEmpty()) {
                             foodDatabaseViewModel.insertFood(
                                 Food(
                                     foodItem = foodItem,
-                                    carbAmount = carbAmount,
+                                    carbAmount = carbAmount.toInt(),
                                     notes = notes
                                 )
                             )

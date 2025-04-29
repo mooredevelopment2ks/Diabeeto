@@ -12,6 +12,9 @@ import kotlinx.coroutines.launch
 class InsulinCalculatorViewModel(private val settingsRepository: SettingsRepository) : ViewModel() {
     private val _currentCarbsPerUnit = MutableStateFlow(0)
 
+    private val _calculatedInsulinAmount = MutableStateFlow(0)
+    val calculatedInsulinAmount: StateFlow<Int> = _calculatedInsulinAmount
+
     private val _selectedFoods = MutableStateFlow<List<Food>>(emptyList())
     val selectedFoods: StateFlow<List<Food>> = _selectedFoods
 
@@ -23,16 +26,23 @@ class InsulinCalculatorViewModel(private val settingsRepository: SettingsReposit
 
     init {
         viewModelScope.launch {
-            combine(_selectedFoods, _foodQuantities) { foods, quantities ->
-                calculateTotalCarbs(foods, quantities)
-            }.collect { totalCarbs ->
+            combine(
+                _selectedFoods,
+                _foodQuantities,
+                settingsRepository.carbsPerUnit
+            ) { foods, quantities, carbsPerUnit ->
+                Triple(foods, quantities, carbsPerUnit)
+            }.collect { (foods, quantities, carbsPerUnit) ->
+                _currentCarbsPerUnit.value = carbsPerUnit
+                val totalCarbs = calculateTotalCarbs(foods, quantities)
                 _totalCarbAmount.value = totalCarbs
-            }
-        }
 
-        viewModelScope.launch {
-            settingsRepository.carbsPerUnit.collect { value ->
-                _currentCarbsPerUnit.value = value
+                if (carbsPerUnit <= 0) {
+                    _calculatedInsulinAmount.value = 0
+                } else {
+                    val exactAmount = totalCarbs.toDouble() / carbsPerUnit.toDouble()
+                    _calculatedInsulinAmount.value = kotlin.math.round(exactAmount).toInt()
+                }
             }
         }
     }
@@ -79,11 +89,44 @@ class InsulinCalculatorViewModel(private val settingsRepository: SettingsReposit
         _foodQuantities.value = emptyMap()
     }
 
-    fun calculateInsulinAmount(): Int {
-        val carbsPerUnitValue = _currentCarbsPerUnit.value
-        if (carbsPerUnitValue <= 0) return 0
+    private fun updateInsulinCalculation(totalCarbs: Int = _totalCarbAmount.value,
+                                         carbsPerUnit: Int = _currentCarbsPerUnit.value) {
+        if (carbsPerUnit <= 0) {
+            _calculatedInsulinAmount.value = 0
+            return
+        }
 
-        val exactAmount = _totalCarbAmount.value.toDouble() / carbsPerUnitValue.toDouble()
-        return kotlin.math.round(exactAmount).toInt()
+        val exactAmount = totalCarbs.toDouble() / carbsPerUnit.toDouble()
+        _calculatedInsulinAmount.value = kotlin.math.round(exactAmount).toInt()
+    }
+
+    fun refreshCalculations() {
+        val foods = _selectedFoods.value
+        val quantities = _foodQuantities.value
+        _totalCarbAmount.value = calculateTotalCarbs(foods, quantities)
+        updateInsulinCalculation()
+    }
+
+    fun updateFoodInList(updatedFood: Food) {
+        val currentFoods = _selectedFoods.value.toMutableList()
+        val index = currentFoods.indexOfFirst { it.id == updatedFood.id }
+        if (index != -1) {
+            currentFoods[index] = updatedFood
+            _selectedFoods.value = currentFoods
+        }
+    }
+
+    fun addFoodAtPosition(food: Food, position: Int) {
+        val currentFoods = _selectedFoods.value.toMutableList()
+        val validPosition = position.coerceIn(0, currentFoods.size)
+
+        if (!currentFoods.contains(food)) {
+            currentFoods.add(validPosition, food)
+            _selectedFoods.value = currentFoods
+
+            val currentQuantities = _foodQuantities.value.toMutableMap()
+            currentQuantities[food.id] = 1  // Reset to 1 or use stored quantity
+            _foodQuantities.value = currentQuantities
+        }
     }
 }

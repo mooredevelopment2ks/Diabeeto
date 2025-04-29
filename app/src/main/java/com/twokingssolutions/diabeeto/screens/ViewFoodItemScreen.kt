@@ -27,7 +27,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -46,7 +45,10 @@ import androidx.navigation.NavController
 import com.twokingssolutions.diabeeto.R
 import com.twokingssolutions.diabeeto.db.Food
 import com.twokingssolutions.diabeeto.viewModel.FoodDatabaseViewModel
+import com.twokingssolutions.diabeeto.viewModel.InsulinCalculatorViewModel
 import org.koin.androidx.compose.koinViewModel
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun ViewFoodItemScreen(
@@ -54,11 +56,13 @@ fun ViewFoodItemScreen(
     food: Food
 ) {
     val foodDatabaseViewModel: FoodDatabaseViewModel = koinViewModel()
-    var carbAmount by remember { mutableIntStateOf(food.carbAmount) }
+    val insulinCalculatorViewModel: InsulinCalculatorViewModel = koinViewModel()
+    var carbAmount by remember { mutableStateOf(food.carbAmount.toString()) }
     var foodItem by remember { mutableStateOf(food.foodItem) }
     var notes by remember { mutableStateOf(food.notes) }
     var editableView by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
+    val context = LocalContext.current
 
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -96,13 +100,13 @@ fun ViewFoodItemScreen(
             )
             Spacer(modifier = Modifier.height(20.dp))
             TextField(
-                value = if (editableView) carbAmount.toString() else "${carbAmount}g",
-                onValueChange = { newValue ->
-                    carbAmount = newValue.toIntOrNull() ?: carbAmount
-                },
+                value = if (editableView) carbAmount else "${carbAmount}g",
+                onValueChange = { carbAmount = it.filter { char -> char.isDigit() } },
                 readOnly = !editableView,
                 modifier = Modifier.focusRequester(focusRequester),
                 colors = TextFieldDefaults.colors(
+                    focusedTextColor = colorResource(R.color.secondary_colour),
+                    unfocusedTextColor = colorResource(R.color.secondary_colour),
                     focusedContainerColor = if (!editableView) Color.Transparent else Color.White,
                     unfocusedContainerColor = if (!editableView) Color.Transparent else Color.White,
                     focusedIndicatorColor = if (!editableView) Color.Transparent else Color.Unspecified,
@@ -112,7 +116,7 @@ fun ViewFoodItemScreen(
                     fontSize = 20.sp,
                     textAlign = TextAlign.Start
                 ),
-                keyboardOptions = KeyboardOptions.Default.copy( // Corrected parameter name
+                keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Number
                 ),
                 trailingIcon = {
@@ -132,6 +136,8 @@ fun ViewFoodItemScreen(
                 readOnly = !editableView,
                 modifier = Modifier.focusRequester(focusRequester),
                 colors = TextFieldDefaults.colors(
+                    focusedTextColor = colorResource(R.color.secondary_colour),
+                    unfocusedTextColor = colorResource(R.color.secondary_colour),
                     focusedContainerColor = if (!editableView) Color.Transparent else Color.White,
                     unfocusedContainerColor = if (!editableView) Color.Transparent else Color.White,
                     focusedIndicatorColor = if (!editableView) Color.Transparent else Color.Unspecified,
@@ -149,6 +155,8 @@ fun ViewFoodItemScreen(
                 readOnly = !editableView,
                 modifier = Modifier.focusRequester(focusRequester),
                 colors = TextFieldDefaults.colors(
+                    focusedTextColor = colorResource(R.color.secondary_colour),
+                    unfocusedTextColor = colorResource(R.color.secondary_colour),
                     focusedContainerColor = if (!editableView) Color.Transparent else Color.White,
                     unfocusedContainerColor = if (!editableView) Color.Transparent else Color.White,
                     focusedIndicatorColor = if (!editableView) Color.Transparent else Color.Unspecified,
@@ -179,16 +187,25 @@ fun ViewFoodItemScreen(
                 }
                 FilledTonalButton(
                     onClick = {
-                        editableView = !editableView
-                        if (!editableView) {
-                            foodDatabaseViewModel.updateFood(
-                                Food(
+                        if (editableView && (carbAmount.isEmpty() || foodItem.isEmpty())) {
+                            Toast.makeText(
+                                context,
+                                "Please fill in food item and carb amount",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            editableView = !editableView
+                            if (!editableView) {
+                                val updatedFood = Food(
                                     id = food.id,
                                     foodItem = foodItem,
-                                    carbAmount = carbAmount,
-                                    notes = notes
+                                    carbAmount = carbAmount.toInt(),
+                                    notes = notes,
+                                    isFavourite = food.isFavourite
                                 )
-                            )
+                                foodDatabaseViewModel.updateFood(updatedFood)
+                                insulinCalculatorViewModel.updateFoodInList(updatedFood)
+                            }
                         }
                     },
                     colors = ButtonDefaults.filledTonalButtonColors(

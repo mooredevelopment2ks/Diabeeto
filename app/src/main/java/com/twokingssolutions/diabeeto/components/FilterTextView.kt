@@ -65,10 +65,14 @@ fun FilterTextView(
                 .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
                 .focusRequester(focusRequester),
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedContainerColor = Color.White,
+                focusedTextColor = colorResource(R.color.secondary_colour),
+                unfocusedTextColor = Color.Unspecified,
+                focusedLabelColor = colorResource(R.color.secondary_colour),
+                unfocusedLabelColor = colorResource(R.color.secondary_colour),
+                focusedTrailingIconColor = colorResource(R.color.secondary_colour),
+                unfocusedTrailingIconColor = colorResource(R.color.secondary_colour),
                 focusedContainerColor = Color.White,
-                unfocusedTextColor = colorResource(R.color.secondary_colour),
-                focusedTextColor = colorResource(R.color.secondary_colour)
+                unfocusedContainerColor = Color.White
             ),
             singleLine = true,
             keyboardOptions = KeyboardOptions.Default.copy(
@@ -77,10 +81,12 @@ fun FilterTextView(
             keyboardActions = KeyboardActions(
                 onDone = {
                     navController.navigate(NavRoutes.SearchResultsRoute(searchResults))
+                    foodDatabaseViewModel.onSearchTextChange("")
                     expanded = false
                 },
                 onSearch = {
                     navController.navigate(NavRoutes.SearchResultsRoute(searchResults))
+                    foodDatabaseViewModel.onSearchTextChange("")
                     expanded = false
                 }
             ),
@@ -114,7 +120,8 @@ fun FilterTextView(
                     DropdownMenuItem(
                         text = { Text(food.foodItem) },
                         onClick = {
-                            navController.navigate(NavRoutes.SearchResultsRoute(searchResults))
+                            navController.navigate(NavRoutes.SearchResultsRoute(listOf(food)))
+                            foodDatabaseViewModel.onSearchTextChange("")
                             expanded = false
                         }
                     )
