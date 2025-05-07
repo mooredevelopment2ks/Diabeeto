@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -18,15 +19,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.AddCircleOutline
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.RemoveCircleOutline
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -42,6 +49,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,6 +61,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.twokingssolutions.diabeeto.viewModel.FoodDatabaseViewModel
 import org.koin.androidx.compose.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodItem(
     navController: NavController,
@@ -86,6 +95,9 @@ fun FoodItem(
             }
         }
     )
+    val options = listOf("Per 100g", "Serving Size")
+    var expanded by remember { mutableStateOf(false) }
+    var text by remember { mutableStateOf(options[0]) }
 
     AnimatedVisibility(
         visible = !isRemoved,
@@ -133,66 +145,141 @@ fun FoodItem(
                         .fillMaxWidth()
                         .height(IntrinsicSize.Min)
                 ) {
-                    if (!isFavourite && !food.isFavourite) {
-                        Icon(
-                            painter = painterResource(R.drawable.star_outlined_24dp_black),
-                            contentDescription = "Add to Favourites",
-                            modifier = Modifier
-                                .padding(10.dp)
-                                .align(Alignment.Top)
-                                .clickable {
-                                    isFavourite = !isFavourite
-                                    foodDatabaseViewModel.updateFood(
-                                        Food(
-                                            id = food.id,
-                                            foodItem = food.foodItem,
-                                            carbAmount = food.carbAmount,
-                                            notes = food.notes,
-                                            isFavourite = true
+                    if (selectedRoute != 1) {
+                        if (!isFavourite && !food.isFavourite) {
+                            Icon(
+                                painter = painterResource(R.drawable.star_outlined_24dp_black),
+                                contentDescription = "Add to Favourites",
+                                modifier = Modifier
+                                    .padding(10.dp)
+                                    .align(Alignment.CenterVertically)
+                                    .clickable {
+                                        isFavourite = !isFavourite
+                                        foodDatabaseViewModel.updateFood(
+                                            Food(
+                                                id = food.id,
+                                                foodItem = food.foodItem,
+                                                carbAmount = food.carbAmount,
+                                                notes = food.notes,
+                                                isFavourite = true
+                                            )
                                         )
-                                    )
-                                },
-                            tint = colorResource(R.color.inactive_colour)
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Filled.Star,
-                            contentDescription = "Remove from Favourites",
-                            modifier = Modifier
-                                .padding(10.dp)
-                                .align(Alignment.Top)
-                                .clickable {
-                                    isFavourite = !isFavourite
-                                    foodDatabaseViewModel.updateFood(
-                                        Food(
-                                            id = food.id,
-                                            foodItem = food.foodItem,
-                                            carbAmount = food.carbAmount,
-                                            notes = food.notes,
-                                            isFavourite = false
+                                    },
+                                tint = colorResource(R.color.inactive_colour)
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Filled.Star,
+                                contentDescription = "Remove from Favourites",
+                                modifier = Modifier
+                                    .padding(10.dp)
+                                    .align(Alignment.CenterVertically)
+                                    .clickable {
+                                        isFavourite = !isFavourite
+                                        foodDatabaseViewModel.updateFood(
+                                            Food(
+                                                id = food.id,
+                                                foodItem = food.foodItem,
+                                                carbAmount = food.carbAmount,
+                                                notes = food.notes,
+                                                isFavourite = false
+                                            )
                                         )
-                                    )
-                                },
-                            tint = colorResource(R.color.tertiary_colour)
-                        )
+                                    },
+                                tint = colorResource(R.color.tertiary_colour)
+                            )
+                        }
                     }
                     Column(
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { navController.navigate(NavRoutes.ViewFoodItemRoute(food)) }
                             .padding(10.dp)
+                            .then(
+                                if (selectedRoute != 1) {
+                                    Modifier.clickable {
+                                        navController.navigate(NavRoutes.ViewFoodItemRoute(food))
+                                    }
+                                } else {
+                                    Modifier
+                                }
+                            )
                     ) {
                         Text(
                             text = food.foodItem,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(vertical = 4.dp)
+                            modifier = Modifier
+                                .padding(vertical = 4.dp)
+                                .then(
+                                    if (selectedRoute == 1) {
+                                        Modifier.clickable {
+                                            navController.navigate(NavRoutes.ViewFoodItemRoute(food))
+                                        }
+                                    } else {
+                                        Modifier
+                                    }
+                                )
                         )
-                        Text(
-                            text = "${food.carbAmount}g",
-                            fontSize = 18.sp,
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        )
+                        if (selectedRoute != 1) {
+                            Text(
+                                text = "${food.carbAmount}g",
+                                fontSize = 18.sp
+                            )
+                        } else {
+                            ExposedDropdownMenuBox(
+                                expanded = expanded,
+                                onExpandedChange = { expanded = it }
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Start,
+                                    modifier = Modifier.menuAnchor(
+                                        MenuAnchorType.PrimaryNotEditable,
+                                        true
+                                    )
+                                ) {
+                                    if (expanded) {
+                                        Icon(
+                                            imageVector = Icons.Default.ArrowDropDown,
+                                            contentDescription = "Dropdown Icon",
+                                            modifier = Modifier.padding(end = 4.dp)
+                                        )
+                                    } else {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+                                            contentDescription = "Dropdown Icon",
+                                            modifier = Modifier.padding(end = 4.dp)
+                                        )
+                                    }
+                                    Text(
+                                        text = "${food.carbAmount}g",
+                                        fontSize = 18.sp
+                                    )
+                                    Text(
+                                        text = text,
+                                        fontSize = 18.sp,
+                                        fontStyle = FontStyle.Italic,
+                                        modifier = Modifier
+                                            .padding(start = 6.dp)
+                                    )
+                                }
+                                ExposedDropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false }
+                                ) {
+                                    options.forEach { option ->
+                                        DropdownMenuItem(
+                                            text = { Text(option) },
+                                            onClick = {
+                                                text = option
+                                                expanded = false
+                                            },
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                     if (selectedRoute == 1) {
                         Row(
