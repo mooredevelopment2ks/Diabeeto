@@ -1,142 +1,162 @@
 package com.twokingssolutions.diabeeto.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MenuAnchorType
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Modifier
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.twokingssolutions.diabeeto.R
 import com.twokingssolutions.diabeeto.model.NavRoutes
-import com.twokingssolutions.diabeeto.viewModel.FoodDatabaseViewModel
+import com.twokingssolutions.diabeeto.model.SearchSuggestion
+import com.twokingssolutions.diabeeto.model.SearchSuggestionType
+import com.twokingssolutions.diabeeto.viewModel.ProductDatabaseViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterTextView(
     navController: NavController,
-    foodDatabaseViewModel: FoodDatabaseViewModel
+    productDatabaseViewModel: ProductDatabaseViewModel
 ) {
-    var expanded by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
-    val searchText by foodDatabaseViewModel.searchText.collectAsState(initial = "")
-    val searchResults by foodDatabaseViewModel.foodList.collectAsState(initial = emptyList())
-    val isSearching by foodDatabaseViewModel.isSearching.collectAsState(initial = false)
+    val focusManager = LocalFocusManager.current
+    var searchQuery by remember { mutableStateOf("") }
+    var suggestions by remember { mutableStateOf<List<SearchSuggestion>>(emptyList()) }
+    var expanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(searchQuery) {
+        if (searchQuery.isNotBlank()) {
+            productDatabaseViewModel.getSearchSuggestions(searchQuery) {
+                suggestions = it
+                expanded = it.isNotEmpty()
+            }
+        } else {
+            suggestions = emptyList()
+            expanded = false
+        }
+    }
+
+    LaunchedEffect(searchQuery) {
+        if (searchQuery.isBlank()) {
+            expanded = false
+        }
+    }
 
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = it }
     ) {
         OutlinedTextField(
-            value = searchText,
-            onValueChange = {
-                foodDatabaseViewModel.onSearchTextChange(it)
-                expanded = true
-            },
-            label = { Text("Search") },
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
             modifier = Modifier
                 .fillMaxWidth()
-                .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
+                .menuAnchor(MenuAnchorType.PrimaryEditable, true)
                 .focusRequester(focusRequester),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = colorResource(R.color.secondary_colour),
-                unfocusedTextColor = Color.Unspecified,
-                focusedLabelColor = colorResource(R.color.secondary_colour),
-                unfocusedLabelColor = colorResource(R.color.secondary_colour),
-                focusedTrailingIconColor = colorResource(R.color.secondary_colour),
-                unfocusedTrailingIconColor = colorResource(R.color.secondary_colour),
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White
-            ),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions.Default.copy(
-                imeAction = ImeAction.Search
-            ),
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    navController.navigate(NavRoutes.SearchResultsRoute(searchResults))
-                    foodDatabaseViewModel.onSearchTextChange("")
-                    expanded = false
-                },
-                onSearch = {
-                    navController.navigate(NavRoutes.SearchResultsRoute(searchResults))
-                    foodDatabaseViewModel.onSearchTextChange("")
-                    expanded = false
-                }
-            ),
+            placeholder = { Text("Search products...") },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search",
+                    tint = colorResource(R.color.secondary_colour)
+                )
+            },
             trailingIcon = {
-                if (searchText.isNotEmpty()) {
-                    Icon(
-                        imageVector = Icons.Filled.Clear,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clickable {
-                                foodDatabaseViewModel.onSearchTextChange("")
-                                expanded = false
-                            }
-                    )
+                if (searchQuery.isNotEmpty()) {
+                    IconButton(onClick = { searchQuery = ""
+                        suggestions = emptyList()
+                        expanded = false
+                        focusManager.clearFocus()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Clear search",
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
-            }
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = colorResource(R.color.secondary_colour),
+                unfocusedBorderColor = colorResource(R.color.secondary_colour).copy(alpha = 0.5f),
+                cursorColor = colorResource(R.color.secondary_colour)
+            ),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    navController.navigate(NavRoutes.SearchResultsRoute(queryString = searchQuery))
+                    expanded = false
+                    focusManager.clearFocus()
+                }
+            ),
+            singleLine = true
         )
-        if (isSearching) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
-        } else if (searchResults.isNotEmpty() && expanded) {
+        if (suggestions.isNotEmpty()) {
             ExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
-                searchResults.forEach { food ->
+                suggestions.forEach { suggestion ->
                     DropdownMenuItem(
-                        text = { Text(food.foodItem) },
+                        text = { Text(suggestion.name) },
                         onClick = {
-                            navController.navigate(NavRoutes.SearchResultsRoute(listOf(food)))
-                            foodDatabaseViewModel.onSearchTextChange("")
+                            searchQuery = suggestion.name
                             expanded = false
-                        }
+                            focusManager.clearFocus()
+                            when (suggestion.type) {
+                                SearchSuggestionType.DEPARTMENT -> navController.navigate(
+                                    NavRoutes.SearchResultsRoute("department:${suggestion.name}")
+                                )
+                                else -> navController.navigate(
+                                    NavRoutes.SearchResultsRoute(suggestion.name)
+                                )
+                            }
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
                     )
                 }
             }
-        } else if (expanded) {
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                DropdownMenuItem(
-                    text = { Text("No results found") },
-                    onClick = { expanded = false }
-                )
-            }
+        }
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Card(
+            modifier = Modifier.clickable {
+                navController.navigate(NavRoutes.SearchResultsRoute(queryString = "browse_all"))
+            },
+            shape = RoundedCornerShape(8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = colorResource(R.color.tertiary_colour)
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Text(
+                text = "Browse All Products",
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                color = colorResource(R.color.white_colour)
+            )
         }
     }
 }

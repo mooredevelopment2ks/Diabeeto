@@ -12,9 +12,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.twokingssolutions.diabeeto.di.appModule
 import com.twokingssolutions.diabeeto.di.databaseModule
-import com.twokingssolutions.diabeeto.di.insulinCalculatorModule
-import com.twokingssolutions.diabeeto.di.preferencesModule
 import com.twokingssolutions.diabeeto.ui.theme.DiabeetoTheme
 
 import org.koin.android.ext.koin.androidContext
@@ -73,8 +72,7 @@ class MainActivity : ComponentActivity() {
             androidContext(this@MainActivity)
             modules(listOf(
                 databaseModule,
-                preferencesModule,
-                insulinCalculatorModule
+                appModule
             ))
         }
         enableEdgeToEdge()

@@ -9,9 +9,9 @@ import kotlinx.coroutines.launch
 
 class SettingsViewModel(private val repository: SettingsRepository) : ViewModel() {
     val carbsPerUnit = repository.carbsPerUnit
-        .stateIn(viewModelScope, SharingStarted.Eagerly, 10)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 10.0)
 
-    fun setCarbsPerUnit(value: Int) {
+    fun setCarbsPerUnit(value: Double) {
         viewModelScope.launch {
             repository.setCarbsPerUnit(value)
         }

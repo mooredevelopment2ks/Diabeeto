@@ -27,15 +27,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.twokingssolutions.diabeeto.R
+import java.util.Locale
 
 @Composable
 fun InsulinToCarbohydrateRatio(
     modifier: Modifier = Modifier,
-    initialRatio: Int = 10,
-    onRatioChanged: (Int) -> Unit
+    initialRatio: Double = 10.0,
+    onRatioChanged: (Double) -> Unit
 ) {
     var carbsPerUnit by remember(initialRatio) { mutableStateOf(initialRatio.toString()) }
-    val validCarbsPerUnit = carbsPerUnit.toIntOrNull()?.coerceIn(1, 50) ?: initialRatio
+    val validCarbsPerUnit = carbsPerUnit.toDoubleOrNull()?.coerceIn(1.0, 50.0) ?: initialRatio
 
     Column(modifier = modifier) {
         Text(
@@ -46,7 +47,7 @@ fun InsulinToCarbohydrateRatio(
         )
 
         Text(
-            text = "1 unit of insulin covers ${validCarbsPerUnit}g of carbs",
+            text = "1 unit of insulin covers ${String.format(Locale.getDefault(), "%.1f", validCarbsPerUnit)}g of carbs",
             fontSize = 16.sp,
             color = colorResource(R.color.secondary_colour),
             modifier = Modifier.padding(start = 16.dp, bottom = 16.dp)
@@ -61,9 +62,9 @@ fun InsulinToCarbohydrateRatio(
             TextField(
                 value = carbsPerUnit,
                 onValueChange = {
-                    val filtered = it.filter { char -> char.isDigit() }
+                    val filtered = it.filter { char -> char.isDigit() || char == '.' }
                     carbsPerUnit = filtered
-                    val newValue = filtered.toIntOrNull()?.coerceIn(1, 50) ?: initialRatio
+                    val newValue = filtered.toDoubleOrNull()?.coerceIn(1.0, 50.0) ?: initialRatio
                     onRatioChanged(newValue)
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -79,24 +80,22 @@ fun InsulinToCarbohydrateRatio(
                     imageVector = Icons.Outlined.RemoveCircleOutline,
                     contentDescription = "Decrease ratio",
                     modifier = Modifier.clickable {
-                        val newValue = (carbsPerUnit.toIntOrNull() ?: initialRatio) - 1
-                        if (newValue >= 1) {
-                            carbsPerUnit = newValue.toString()
+                        val newValue = (carbsPerUnit.toDoubleOrNull() ?: initialRatio) - 1.0
+                        if (newValue >= 1.0) {
+                            carbsPerUnit = String.format(Locale.getDefault(),"%.1f", newValue)
                             onRatioChanged(newValue)
                         }
                     },
                     tint = colorResource(R.color.secondary_colour)
                 )
-
                 Spacer(modifier = Modifier.width(8.dp))
-
                 Icon(
                     imageVector = Icons.Outlined.AddCircleOutline,
                     contentDescription = "Increase ratio",
                     modifier = Modifier.clickable {
-                        val newValue = (carbsPerUnit.toIntOrNull() ?: initialRatio) + 1
-                        if (newValue <= 50) {
-                            carbsPerUnit = newValue.toString()
+                        val newValue = (carbsPerUnit.toDoubleOrNull() ?: initialRatio) + 1.0
+                        if (newValue <= 50.0) {
+                            carbsPerUnit = String.format(Locale.getDefault(),"%.1f", newValue)
                             onRatioChanged(newValue)
                         }
                     },
@@ -107,8 +106,8 @@ fun InsulinToCarbohydrateRatio(
         Slider(
             value = validCarbsPerUnit.toFloat(),
             onValueChange = {
-                carbsPerUnit = it.toInt().toString()
-                onRatioChanged(it.toInt())
+                carbsPerUnit = String.format(Locale.getDefault(),"%.1f", it)
+                onRatioChanged(it.toDouble())
             },
             valueRange = 1f..50f,
             steps = 48,

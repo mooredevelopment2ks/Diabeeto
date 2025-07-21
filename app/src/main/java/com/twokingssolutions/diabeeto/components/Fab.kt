@@ -21,7 +21,7 @@ fun Fab(
 ) {
     FloatingActionButton(
         onClick = {
-            navController.navigate(NavRoutes.AddFoodItemRoute)
+            navController.navigate(NavRoutes.AddProductItemRoute)
         },
         shape = RoundedCornerShape(30.dp),
         containerColor = colorResource(R.color.secondary_colour),
@@ -31,7 +31,7 @@ fun Fab(
     ) {
         Icon(
             imageVector = Icons.Filled.Add,
-            contentDescription = "Add Food Item",
+            contentDescription = "Add a new product",
             modifier = Modifier
                 .size(50.dp)
         )

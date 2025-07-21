@@ -3,6 +3,9 @@
     <color name="primary_colour">#FFFFCE3B</color>
     <color name="tertiary_colour">#FFDB8B00</color>
     <color name="white_colour">#FFFEF7FF</color>
-    <color name="inactive_colour">#434141</color>
+    <color name="inactive_colour">#FF434141</color>
     <color name="secondary_colour">#FF0A0300</color>
+    <color name="checked_colour">#FF00FF00</color>
+    <color name="grey_colour">#FFABA0A0</color>
+    <color name="red_colour">#FFFF0000</color>
 </resources>

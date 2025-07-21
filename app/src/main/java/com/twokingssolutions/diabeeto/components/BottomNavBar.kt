@@ -80,15 +80,15 @@ fun BottomNavBar(
                     selected = index == selectedRoute,
                     onClick = {
                         when (index) {
-                            0 -> navController.navigate(NavRoutes.CarbCounterRoute)
-                            1 -> navController.navigate(NavRoutes.InsulinCalculatorRoute) {
+                            0 -> navController.navigate(NavRoutes.ProductItemGraph)
+                            1 -> navController.navigate(NavRoutes.InsulinCalculatorGraph) {
                                 launchSingleTop = true
-                                popUpTo(NavRoutes.CarbCounterRoute) {
+                                popUpTo(NavRoutes.ProductItemGraph) {
                                     saveState = true
                                 }
                                 restoreState = true
                             }
-                            2 -> navController.navigate(NavRoutes.SettingsRoute)
+                            2 -> navController.navigate(NavRoutes.SettingsGraph)
                         }
                     },
                     colors = NavigationBarItemDefaults.colors(
@@ -107,9 +107,9 @@ fun BottomNavBar(
                     selected = selectedRoute == index,
                     onClick = {
                         when (index) {
-                            0 -> navController.navigate(NavRoutes.CarbCounterRoute)
-                            1 -> navController.navigate(NavRoutes.InsulinCalculatorRoute)
-                            2 -> navController.navigate(NavRoutes.SettingsRoute)
+                            0 -> navController.navigate(NavRoutes.ProductItemGraph)
+                            1 -> navController.navigate(NavRoutes.InsulinCalculatorGraph)
+                            2 -> navController.navigate(NavRoutes.SettingsGraph)
                         }
                     },
                     colors = NavigationBarItemDefaults.colors(

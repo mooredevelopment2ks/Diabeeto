@@ -2,131 +2,120 @@ package com.twokingssolutions.diabeeto.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.twokingssolutions.diabeeto.db.Food
+import com.twokingssolutions.diabeeto.model.CarbCalculationMode
+import com.twokingssolutions.diabeeto.db.relation.FullProductDetails
+import com.twokingssolutions.diabeeto.model.ProductCalculationState
 import com.twokingssolutions.diabeeto.repository.SettingsRepository
+import com.twokingssolutions.diabeeto.util.getCarbsValue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.SharingStarted
 
-class InsulinCalculatorViewModel(private val settingsRepository: SettingsRepository) : ViewModel() {
-    private val _currentCarbsPerUnit = MutableStateFlow(0)
+class InsulinCalculatorViewModel(
+    private val settingsRepository: SettingsRepository
+) : ViewModel() {
+    private val _selectedProducts = MutableStateFlow<List<FullProductDetails>>(emptyList())
+    val selectedProducts: StateFlow<List<FullProductDetails>> = _selectedProducts.asStateFlow()
 
-    private val _calculatedInsulinAmount = MutableStateFlow(0)
-    val calculatedInsulinAmount: StateFlow<Int> = _calculatedInsulinAmount
+    private val _productCalculationStates = MutableStateFlow<Map<String, ProductCalculationState>>(emptyMap())
+    val productCalculationStates: StateFlow<Map<String, ProductCalculationState>> = _productCalculationStates.asStateFlow()
 
-    private val _selectedFoods = MutableStateFlow<List<Food>>(emptyList())
-    val selectedFoods: StateFlow<List<Food>> = _selectedFoods
-
-    private val _foodQuantities = MutableStateFlow<Map<Int, Int>>(emptyMap())
-    val foodQuantities: StateFlow<Map<Int, Int>> = _foodQuantities
-
-    private val _totalCarbAmount = MutableStateFlow(0)
-    val totalCarbAmount: StateFlow<Int> = _totalCarbAmount
-
-    init {
-        viewModelScope.launch {
-            combine(
-                _selectedFoods,
-                _foodQuantities,
-                settingsRepository.carbsPerUnit
-            ) { foods, quantities, carbsPerUnit ->
-                Triple(foods, quantities, carbsPerUnit)
-            }.collect { (foods, quantities, carbsPerUnit) ->
-                _currentCarbsPerUnit.value = carbsPerUnit
-                val totalCarbs = calculateTotalCarbs(foods, quantities)
-                _totalCarbAmount.value = totalCarbs
-
-                if (carbsPerUnit <= 0) {
-                    _calculatedInsulinAmount.value = 0
-                } else {
-                    val exactAmount = totalCarbs.toDouble() / carbsPerUnit.toDouble()
-                    _calculatedInsulinAmount.value = kotlin.math.round(exactAmount).toInt()
-                }
+    val totalCarbAmount: StateFlow<Double> = combine(
+        _selectedProducts,
+        _productCalculationStates
+    ) { products, states ->
+        products.sumOf { product ->
+            val state = states[product.product.productId]
+            val carbsPerServing = state?.carbsPerServing ?: getCarbsPerServing(product)
+            val carbsPer100g100ml = state?.carbsPer100g100ml ?: getCarbsPer100g100ml(product)
+            val quantity = state?.quantity ?: 1.0
+            val mode = state?.calculationMode ?: CarbCalculationMode.PER_SERVING
+            when (mode) {
+                CarbCalculationMode.PER_SERVING -> carbsPerServing * quantity
+                CarbCalculationMode.PER_100G_100ML -> carbsPer100g100ml * quantity
+                CarbCalculationMode.CUSTOM_AMOUNT -> (carbsPer100g100ml / 100.0) * quantity
             }
         }
-    }
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        0.0
+    )
 
-    private fun calculateTotalCarbs(foods: List<Food>, quantities: Map<Int, Int>): Int {
-        return foods.sumOf { food ->
-            val quantity = quantities[food.id] ?: 1
-            food.carbAmount * quantity
-        }
-    }
+    val calculatedInsulinAmount: StateFlow<Double> = combine(
+        totalCarbAmount,
+        settingsRepository.carbsPerUnit
+    ) { totalCarbs, carbsPerUnit ->
+        if (carbsPerUnit > 0) totalCarbs / carbsPerUnit else 0.0
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        0.0
+    )
 
-    fun addFood(food: Food) {
-        val currentFoods = _selectedFoods.value.toMutableList()
-        if (!currentFoods.contains(food)) {
-            currentFoods.add(food)
-            _selectedFoods.value = currentFoods
+    fun addProduct(fullProductDetails: FullProductDetails) {
+        val productId = fullProductDetails.product.productId
 
-            val currentQuantities = _foodQuantities.value.toMutableMap()
-            currentQuantities[food.id] = 1
-            _foodQuantities.value = currentQuantities
-        }
-    }
-
-    fun updateFoodQuantity(foodId: Int, quantity: Int) {
-        if (quantity > 0) {
-            val currentQuantities = _foodQuantities.value.toMutableMap()
-            currentQuantities[foodId] = quantity
-            _foodQuantities.value = currentQuantities
-        }
-    }
-
-    fun removeFood(food: Food) {
-        val currentFoods = _selectedFoods.value.toMutableList()
-        currentFoods.remove(food)
-        _selectedFoods.value = currentFoods
-
-        val currentQuantities = _foodQuantities.value.toMutableMap()
-        currentQuantities.remove(food.id)
-        _foodQuantities.value = currentQuantities
-    }
-
-    fun clearSelectedFoods() {
-        _selectedFoods.value = emptyList()
-        _foodQuantities.value = emptyMap()
-    }
-
-    private fun updateInsulinCalculation(totalCarbs: Int = _totalCarbAmount.value,
-                                         carbsPerUnit: Int = _currentCarbsPerUnit.value) {
-        if (carbsPerUnit <= 0) {
-            _calculatedInsulinAmount.value = 0
+        if (_selectedProducts.value.any { it.product.productId == productId }) {
             return
         }
 
-        val exactAmount = totalCarbs.toDouble() / carbsPerUnit.toDouble()
-        _calculatedInsulinAmount.value = kotlin.math.round(exactAmount).toInt()
+        _selectedProducts.value = _selectedProducts.value + fullProductDetails
+        val carbsPerServing = getCarbsPerServing(fullProductDetails)
+        val carbsPer100g100ml = getCarbsPer100g100ml(fullProductDetails)
+        val calculationState = ProductCalculationState(
+            quantity = 1.0,
+            carbsPerServing = carbsPerServing,
+            carbsPer100g100ml = carbsPer100g100ml,
+            calculationMode = CarbCalculationMode.PER_SERVING
+        )
+
+        val currentStates = _productCalculationStates.value.toMutableMap()
+        currentStates[productId] = calculationState
+        _productCalculationStates.value = currentStates
     }
 
-    fun refreshCalculations() {
-        val foods = _selectedFoods.value
-        val quantities = _foodQuantities.value
-        _totalCarbAmount.value = calculateTotalCarbs(foods, quantities)
-        updateInsulinCalculation()
+    fun removeProduct(product: com.twokingssolutions.diabeeto.db.entity.Product) {
+        val currentProducts = _selectedProducts.value.toMutableList()
+        currentProducts.removeAll { it.product.productId == product.productId }
+        _selectedProducts.value = currentProducts
+
+        val currentStates = _productCalculationStates.value.toMutableMap()
+        currentStates.remove(product.productId)
+        _productCalculationStates.value = currentStates
     }
 
-    fun updateFoodInList(updatedFood: Food) {
-        val currentFoods = _selectedFoods.value.toMutableList()
-        val index = currentFoods.indexOfFirst { it.id == updatedFood.id }
-        if (index != -1) {
-            currentFoods[index] = updatedFood
-            _selectedFoods.value = currentFoods
-        }
+    fun updateProductState(productId: String, newState: ProductCalculationState) {
+        val currentStates = _productCalculationStates.value.toMutableMap()
+        currentStates[productId] = newState
+        _productCalculationStates.value = currentStates
     }
 
-    fun addFoodAtPosition(food: Food, position: Int) {
-        val currentFoods = _selectedFoods.value.toMutableList()
-        val validPosition = position.coerceIn(0, currentFoods.size)
+    fun clearSelectedProducts() {
+        _selectedProducts.value = emptyList()
+        _productCalculationStates.value = emptyMap()
+    }
 
-        if (!currentFoods.contains(food)) {
-            currentFoods.add(validPosition, food)
-            _selectedFoods.value = currentFoods
 
-            val currentQuantities = _foodQuantities.value.toMutableMap()
-            currentQuantities[food.id] = 1  // Reset to 1 or use stored quantity
-            _foodQuantities.value = currentQuantities
-        }
+    private fun getCarbsPerServing(product: FullProductDetails): Double {
+        return getCarbsValue(product, "perServing")
+    }
+
+    private fun getCarbsPer100g100ml(product: FullProductDetails): Double {
+        return getCarbsValue(product, "per100g100ml")
+    }
+
+    fun addProductAtPosition(fullProductDetails: FullProductDetails, position: Int, state: ProductCalculationState) {
+        val currentProducts = _selectedProducts.value.toMutableList()
+        val validPosition = position.coerceIn(0, currentProducts.size)
+        currentProducts.add(validPosition, fullProductDetails)
+        _selectedProducts.value = currentProducts
+
+        val currentStates = _productCalculationStates.value.toMutableMap()
+        currentStates[fullProductDetails.product.productId] = state
+        _productCalculationStates.value = currentStates
     }
 }

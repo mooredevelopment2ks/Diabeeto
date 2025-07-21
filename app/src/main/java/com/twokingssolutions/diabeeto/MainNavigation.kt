@@ -6,63 +6,50 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
-import com.twokingssolutions.diabeeto.model.CustomNavType
-import com.twokingssolutions.diabeeto.db.Food
 import com.twokingssolutions.diabeeto.model.NavRoutes
-import com.twokingssolutions.diabeeto.screens.AddFoodItemScreen
+import com.twokingssolutions.diabeeto.screens.AddProductItemScreen
 import com.twokingssolutions.diabeeto.screens.HomeScreen
 import com.twokingssolutions.diabeeto.screens.InsulinCalculatorScreen
 import com.twokingssolutions.diabeeto.screens.SearchResultScreen
 import com.twokingssolutions.diabeeto.screens.SettingsScreen
-import com.twokingssolutions.diabeeto.screens.ViewFoodItemScreen
-import com.twokingssolutions.diabeeto.viewModel.FoodDatabaseViewModel
-import org.koin.androidx.compose.koinViewModel
-import kotlin.reflect.typeOf
+import com.twokingssolutions.diabeeto.screens.ViewProductItemScreen
 
 @Composable
 fun MainNavigation() {
     val navController = rememberNavController()
-    val foodDatabaseViewModel: FoodDatabaseViewModel = koinViewModel()
-
     NavHost(
         navController = navController,
-        startDestination = NavRoutes.CarbCounterRoute
+        startDestination = NavRoutes.ProductItemGraph
     ) {
-        navigation<NavRoutes.CarbCounterRoute>(
+        navigation<NavRoutes.ProductItemGraph>(
             startDestination = NavRoutes.HomeRoute
         ) {
             composable<NavRoutes.HomeRoute> {
                 HomeScreen(
-                    navController = navController,
-                    foodDatabaseViewModel = foodDatabaseViewModel
+                    navController = navController
                 )
             }
-            composable<NavRoutes.SearchResultsRoute>(
-                typeMap = mapOf(typeOf<List<Food>>() to CustomNavType.FoodListType)
-            ) { backStackEntry ->
+            composable<NavRoutes.SearchResultsRoute> { backStackEntry ->
                 val arguments = backStackEntry.toRoute<NavRoutes.SearchResultsRoute>()
                 SearchResultScreen(
                     navController = navController,
-                    filteredFoods = arguments.foods
+                    query = arguments.queryString
                 )
             }
-            composable<NavRoutes.AddFoodItemRoute> {
-                AddFoodItemScreen(
-                    navController = navController,
-                    foodDatabaseViewModel = foodDatabaseViewModel
+            composable<NavRoutes.AddProductItemRoute> {
+                AddProductItemScreen(
+                    navController = navController
                 )
             }
-            composable<NavRoutes.ViewFoodItemRoute>(
-                typeMap = mapOf(typeOf<Food>() to CustomNavType.FoodType)
-            ) { backStackEntry ->
-                val arguments = backStackEntry.toRoute<NavRoutes.ViewFoodItemRoute>()
-                ViewFoodItemScreen(
+            composable<NavRoutes.ViewProductItemRoute> { backStackEntry ->
+                val arguments = backStackEntry.toRoute<NavRoutes.ViewProductItemRoute>()
+                ViewProductItemScreen(
                     navController = navController,
-                    food = arguments.food
+                    queryString = arguments.queryString
                 )
             }
         }
-        navigation<NavRoutes.InsulinCalculatorRoute>(
+        navigation<NavRoutes.InsulinCalculatorGraph>(
             startDestination = NavRoutes.InsulinCalculatorScreenRoute
         ) {
             composable<NavRoutes.InsulinCalculatorScreenRoute> {
@@ -71,7 +58,7 @@ fun MainNavigation() {
                 )
             }
         }
-        navigation<NavRoutes.SettingsRoute>(
+        navigation<NavRoutes.SettingsGraph>(
             startDestination = NavRoutes.SettingsScreenRoute
         ) {
             composable<NavRoutes.SettingsScreenRoute> {
