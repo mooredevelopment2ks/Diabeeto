@@ -16,6 +16,7 @@ import com.twokingssolutions.diabeeto.db.relation.FullProductDetails
 import com.twokingssolutions.diabeeto.db.relation.ProductWithAllergyStatements
 import com.twokingssolutions.diabeeto.db.relation.ProductWithDietaryStatements
 import com.twokingssolutions.diabeeto.util.Constants.PRODUCTS_TABLE
+import com.twokingssolutions.diabeeto.util.Constants.DEPARTMENTS_TABLE
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -49,10 +50,10 @@ interface ProductDao {
     suspend fun deleteProduct(product: Product)
 
     @Transaction
-    @Query("SELECT * FROM Products WHERE product_id = :productId")
+    @Query("SELECT * FROM $PRODUCTS_TABLE WHERE product_id = :productId")
     suspend fun getFullProductDetailsById(productId: String): FullProductDetails?
 
-    @Query("SELECT * FROM Products WHERE barcode = :barcode")
+    @Query("SELECT * FROM $PRODUCTS_TABLE WHERE barcode = :barcode")
     suspend fun getProductByBarcode(barcode: String): Product?
 
     @Transaction
@@ -62,7 +63,7 @@ interface ProductDao {
     @Transaction
     @Query("""
         SELECT * FROM $PRODUCTS_TABLE p 
-        LEFT JOIN Departments d ON p.department_id = d.department_id 
+        LEFT JOIN $DEPARTMENTS_TABLE d ON p.department_id = d.department_id 
         WHERE p.name LIKE '%' || :query || '%' 
         ORDER BY COALESCE(d.department_name, 'Unspecified') ASC, p.name ASC 
         LIMIT :limit OFFSET :offset
@@ -79,7 +80,7 @@ interface ProductDao {
     """)
     suspend fun getProductCountByQuery(query: String): Int
 
-    @Query("SELECT * FROM Products WHERE department_id = :departmentId")
+    @Query("SELECT * FROM $PRODUCTS_TABLE WHERE department_id = :departmentId")
     suspend fun getProductsByDepartment(departmentId: String): List<Product>
 
     data class ProductWithDepartmentName(
@@ -90,8 +91,8 @@ interface ProductDao {
     @Query(
         """
         SELECT P.*, D.department_name
-        FROM Products AS P
-        LEFT JOIN Departments AS D ON P.department_id = D.department_id
+        FROM $PRODUCTS_TABLE AS P
+        LEFT JOIN $DEPARTMENTS_TABLE AS D ON P.department_id = D.department_id
         WHERE P.product_id = :productId
     """
     )
@@ -102,17 +103,17 @@ interface ProductDao {
     fun getAllFavourites(): Flow<List<FullProductDetails>>
 
     @Transaction
-    @Query("SELECT * FROM Products WHERE product_id = :productId")
+    @Query("SELECT * FROM $PRODUCTS_TABLE WHERE product_id = :productId")
     fun getProductWithDietaryStatements(productId: String): ProductWithDietaryStatements?
 
     @Transaction
-    @Query("SELECT * FROM Products WHERE product_id = :productId")
+    @Query("SELECT * FROM $PRODUCTS_TABLE WHERE product_id = :productId")
     suspend fun getProductWithAllergyStatements(productId: String): ProductWithAllergyStatements?
 
     @Transaction
     @Query("""
         SELECT * FROM $PRODUCTS_TABLE p 
-        LEFT JOIN Departments d ON p.department_id = d.department_id 
+        LEFT JOIN $DEPARTMENTS_TABLE d ON p.department_id = d.department_id 
         WHERE COALESCE(d.department_name, 'Unspecified') = :departmentName
         ORDER BY p.name ASC 
         LIMIT :limit OFFSET :offset
@@ -125,18 +126,18 @@ interface ProductDao {
 
     @Query("""
         SELECT COUNT(*) FROM $PRODUCTS_TABLE p 
-        LEFT JOIN Departments d ON p.department_id = d.department_id 
+        LEFT JOIN $DEPARTMENTS_TABLE d ON p.department_id = d.department_id 
         WHERE COALESCE(d.department_name, 'Unspecified') = :departmentName
     """)
     suspend fun getProductCountByDepartment(departmentName: String): Int
 
     @Transaction
-    @Query("SELECT * FROM Products WHERE name LIKE '%' || :query || '%' LIMIT :limit")
+    @Query("SELECT * FROM $PRODUCTS_TABLE WHERE name LIKE '%' || :query || '%' LIMIT :limit")
     suspend fun searchProducts(query: String, limit: Int = 5): List<FullProductDetails>
 
     @Transaction
     @Query("""
-        SELECT * FROM Products
+        SELECT * FROM $PRODUCTS_TABLE
         ORDER BY name ASC
         LIMIT :limit OFFSET :offset
     """)
@@ -144,4 +145,8 @@ interface ProductDao {
         limit: Int,
         offset: Int
     ): List<FullProductDetails>
+
+    @Transaction
+    @Query("SELECT * FROM $PRODUCTS_TABLE WHERE barcode = :barcode LIMIT 1")
+    suspend fun getFullProductDetailsByBarcode(barcode: String): FullProductDetails?
 }

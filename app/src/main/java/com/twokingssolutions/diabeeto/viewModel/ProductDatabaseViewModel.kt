@@ -90,11 +90,19 @@ class ProductDatabaseViewModel(private val productRepository: ProductRepository)
             _isSearching.value = true
             _currentOffset = 0
 
-            val results = if (query.startsWith("department:")) {
-                val departmentName = query.removePrefix("department:")
-                productRepository.getProductsByDepartmentPaginated(departmentName, pageSize, _currentOffset)
-            } else {
-                productRepository.getProductsByQueryPaginated(query, pageSize, _currentOffset)
+            val results = when {
+                query.startsWith("department:") -> {
+                    val departmentName = query.removePrefix("department:")
+                    productRepository.getProductsByDepartmentPaginated(departmentName, pageSize, _currentOffset)
+                }
+                query.startsWith("barcode:") -> {
+                    val barcode = query.removePrefix("barcode:")
+                    val product = productRepository.getProductByBarcode(barcode)
+                    product?.let { listOf(it) } ?: emptyList()
+                }
+                else -> {
+                    productRepository.getProductsByQueryPaginated(query, pageSize, _currentOffset)
+                }
             }
 
             _productByQuery.value = results
@@ -175,6 +183,13 @@ class ProductDatabaseViewModel(private val productRepository: ProductRepository)
         viewModelScope.launch {
             val product = productRepository.getProductById(productId)
             _selectedProduct.value = product
+        }
+    }
+
+    fun getProductByBarcode(barcode: String, onResult: (FullProductDetails?) -> Unit) {
+        viewModelScope.launch {
+            val product = productRepository.getProductByBarcode(barcode)
+            onResult(product)
         }
     }
 

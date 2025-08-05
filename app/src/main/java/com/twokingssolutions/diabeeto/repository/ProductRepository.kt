@@ -35,6 +35,10 @@ class ProductRepository(
         return productDao.getFullProductDetailsById(productId)
     }
 
+    suspend fun getProductByBarcode(barcode: String): FullProductDetails? {
+        return productDao.getFullProductDetailsByBarcode(barcode)
+    }
+
     suspend fun insertProduct(
         product: Product,
         nutritionalInformation: NutritionalInformation,

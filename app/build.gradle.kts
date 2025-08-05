@@ -23,7 +23,11 @@ android {
 
     buildTypes {
         release {
+            // Enables code-related app optimization.
+            //isMinifyEnabled = true
             isMinifyEnabled = false
+            // Enables resource shrinking, which removes unused resources.
+            //isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -65,6 +69,7 @@ dependencies {
 
     //Lifecycle
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     //typesafe-navigation
@@ -94,4 +99,13 @@ dependencies {
 
     // Gson for JSON serialization
     implementation(libs.gson)
+
+    // CameraX for barcode scanning
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+
+    //ml-kit Barcode-scanning
+    implementation(libs.mlkit.barcode.scanning)
 }

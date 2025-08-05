@@ -1,3 +1,4 @@
+// MainActivity.kt
 package com.twokingssolutions.diabeeto
 
 import android.animation.ObjectAnimator
@@ -12,12 +13,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.twokingssolutions.diabeeto.di.appModule
-import com.twokingssolutions.diabeeto.di.databaseModule
 import com.twokingssolutions.diabeeto.ui.theme.DiabeetoTheme
-
-import org.koin.android.ext.koin.androidContext
-import org.koin.core.context.startKoin
 
 class MainActivity : ComponentActivity() {
     private var isSplashScreenVisible = true
@@ -68,13 +64,6 @@ class MainActivity : ComponentActivity() {
             }
         }
         super.onCreate(savedInstanceState)
-        startKoin {
-            androidContext(this@MainActivity)
-            modules(listOf(
-                databaseModule,
-                appModule
-            ))
-        }
         enableEdgeToEdge()
         isSplashScreenVisible = false
         setContent {

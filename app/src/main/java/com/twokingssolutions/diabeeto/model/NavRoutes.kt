@@ -12,6 +12,9 @@ sealed class NavRoutes {
     data object HomeRoute : NavRoutes()
 
     @Serializable
+    data object BarcodeScannerRoute : NavRoutes()
+
+    @Serializable
     data object AddProductItemRoute : NavRoutes()
 
     @Serializable

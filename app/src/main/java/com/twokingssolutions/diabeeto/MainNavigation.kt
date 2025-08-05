@@ -13,6 +13,7 @@ import com.twokingssolutions.diabeeto.screens.InsulinCalculatorScreen
 import com.twokingssolutions.diabeeto.screens.SearchResultScreen
 import com.twokingssolutions.diabeeto.screens.SettingsScreen
 import com.twokingssolutions.diabeeto.screens.ViewProductItemScreen
+import com.twokingssolutions.diabeeto.screens.BarcodeScannerScreen
 
 @Composable
 fun MainNavigation() {
@@ -26,6 +27,11 @@ fun MainNavigation() {
         ) {
             composable<NavRoutes.HomeRoute> {
                 HomeScreen(
+                    navController = navController
+                )
+            }
+            composable<NavRoutes.BarcodeScannerRoute> {
+                BarcodeScannerScreen(
                     navController = navController
                 )
             }
